@@ -50,4 +50,45 @@ describe('StringBuf', () => {
     const chunk = sb.toBuffer();
     expect(chunk.toString('UTF8')).to.equal('World!');
   });
+
+  describe('addStringBuf', () => {
+    it('appends the content of another StringBuf', () => {
+      const sb = new StringBuf({ size: 64 });
+      const other = new StringBuf({ size: 64 });
+      sb.addText('Hello, ');
+      other.addText('World!');
+      sb.addStringBuf(other);
+      expect(sb.toBuffer().toString('UTF8')).to.equal('Hello, World!');
+      expect(sb.length).to.equal(13);
+    });
+
+    it('grows when the other buffer does not fit', () => {
+      const sb = new StringBuf({ size: 8 });
+      const other = new StringBuf({ size: 64 });
+      sb.addText('abc');
+      other.addText('0123456789012345678901234567890123456789');
+      sb.addStringBuf(other);
+      expect(sb.capacity).to.be.at.least(43);
+      expect(sb.toBuffer().toString('UTF8')).to.equal('abc0123456789012345678901234567890123456789');
+    });
+
+    it('ignores an empty StringBuf and keeps the cached buffer valid', () => {
+      const sb = new StringBuf({ size: 16 });
+      sb.addText('abc');
+      expect(sb.toBuffer().toString()).to.equal('abc');
+      sb.addStringBuf(new StringBuf({ size: 16 }));
+      expect(sb.length).to.equal(3);
+      expect(sb.toBuffer().toString()).to.equal('abc');
+    });
+
+    it('invalidates a previously taken buffer when content is appended', () => {
+      const sb = new StringBuf({ size: 16 });
+      const other = new StringBuf({ size: 16 });
+      sb.addText('ab');
+      other.addText('cd');
+      expect(sb.toBuffer().toString()).to.equal('ab');
+      sb.addStringBuf(other);
+      expect(sb.toBuffer().toString()).to.equal('abcd');
+    });
+  });
 });

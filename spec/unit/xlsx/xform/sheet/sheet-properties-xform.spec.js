@@ -110,6 +110,7 @@ const expectations = [
     // Known lib bug: SheetPropertiesXform renders pageSetUpPr before outlinePr, but
     // CT_SheetPr (ECMA-376 sml.xsd) requires tabColor, outlinePr, pageSetUpPr.
     knownFailures: ['render', 'renderIn'],
+    knownFailureMessage: /pageSetUpPr/,
     tests: ['render', 'renderIn', 'parse'],
   },
 ];

@@ -1,5 +1,6 @@
 const colCache = verquire('utils/col-cache');
 const Excel = verquire('exceljs');
+const Table = verquire('doc/table');
 
 const spliceArray = (a, index, count, ...rest) => {
   const clone = [...a];
@@ -60,8 +61,8 @@ function checkTable(ref, ws, testValues) {
     for (let j = -1; j <= testValues[0].length + 1; j++) {
       const value = (vRow && vRow[j]) || null;
       const nCol = j + a.col;
-      const cellValue = nCol >= 1 && row.getCell(nCol).value;
-      if (!cellValue) continue;
+      if (nCol < 1) continue;
+      const cellValue = row.getCell(nCol).value;
 
       if (value instanceof Date) {
         expect(cellValue).to.equalDate(value);
@@ -194,6 +195,144 @@ describe('Worksheet', () => {
       newValues.splice(5, 1, ['Totals', { formula: 'SUBTOTAL(104,TestTable[Code])', result: 4 }, null]);
 
       checkTable('A1', ws, newValues);
+    });
+    describe('displayName', () => {
+      it('defaults to the table name', () => {
+        const ws = new Excel.Workbook().addWorksheet('blort');
+        const table = addTable('A1', ws);
+        expect(table.displayName).to.equal('TestTable');
+      });
+
+      // known bug: the setter is declared as `displayNamename` and the getter reads `displyName`, so assigning displayName has no effect — see stage-2 notes
+      it.fails('stores a new display name', () => {
+        const ws = new Excel.Workbook().addWorksheet('blort');
+        const table = addTable('A1', ws);
+        table.displayName = 'Renamed';
+        table.commit();
+        expect(table.displayName).to.equal('Renamed');
+      });
+    });
+
+    describe('registry', () => {
+      function twoTables(ws) {
+        const t1 = ws.addTable({ name: 't1', ref: 'A1', columns: [{ name: 'a' }], rows: [[1]] });
+        const t2 = ws.addTable({ name: 't2', ref: 'D1', columns: [{ name: 'b' }], rows: [[2]] });
+        return [t1, t2];
+      }
+
+      it('getTable and getTables return the added tables', () => {
+        const ws = new Excel.Workbook().addWorksheet('blort');
+        const [t1, t2] = twoTables(ws);
+        expect(ws.getTables()).to.have.length(2);
+        expect(ws.getTable('t1')).to.equal(t1);
+        expect(ws.getTable('t2')).to.equal(t2);
+        expect(ws.getTable('missing')).to.equal(undefined);
+      });
+
+      it('removeTable drops the table by name', () => {
+        const ws = new Excel.Workbook().addWorksheet('blort');
+        const [, t2] = twoTables(ws);
+        ws.removeTable('t1');
+        expect(ws.getTables()).to.deep.equal([t2]);
+        expect(ws.getTable('t1')).to.equal(undefined);
+      });
+
+      it('removeTable ignores an unknown name', () => {
+        const ws = new Excel.Workbook().addWorksheet('blort');
+        twoTables(ws);
+        expect(() => ws.removeTable('missing')).not.to.throw();
+        expect(ws.getTables()).to.have.length(2);
+      });
+    });
+
+    describe('totals row function', () => {
+      const expectations = {
+        average: 'SUBTOTAL(101,Totals[n])',
+        countNums: 'SUBTOTAL(102,Totals[n])',
+        count: 'SUBTOTAL(103,Totals[n])',
+        max: 'SUBTOTAL(104,Totals[n])',
+        min: 'SUBTOTAL(105,Totals[n])',
+        stdDev: 'SUBTOTAL(106,Totals[n])',
+        var: 'SUBTOTAL(107,Totals[n])',
+        sum: 'SUBTOTAL(109,Totals[n])',
+      };
+
+      function totalsTable(ws, column) {
+        return ws.addTable({
+          name: 'Totals',
+          ref: 'A1',
+          totalsRow: true,
+          columns: [{ name: 'label' }, { name: 'n', ...column }],
+          rows: [
+            ['x', 1],
+            ['y', 2],
+          ],
+        });
+      }
+
+      Object.keys(expectations).forEach((totalsRowFunction) => {
+        it(`writes the SUBTOTAL formula for ${totalsRowFunction}`, () => {
+          const ws = new Excel.Workbook().addWorksheet('blort');
+          totalsTable(ws, { totalsRowFunction, totalsRowResult: 3 });
+          expect(ws.getCell('B4').value).to.deep.equal({ formula: expectations[totalsRowFunction], result: 3 });
+        });
+      });
+
+      it('writes the given formula for a custom function', () => {
+        const ws = new Excel.Workbook().addWorksheet('blort');
+        totalsTable(ws, { totalsRowFunction: 'custom', totalsRowFormula: 'ROW()', totalsRowResult: 4 });
+        expect(ws.getCell('B4').value).to.deep.equal({ formula: 'ROW()', result: 4 });
+      });
+
+      it('writes an empty cell for the none function', () => {
+        const ws = new Excel.Workbook().addWorksheet('blort');
+        totalsTable(ws, { totalsRowFunction: 'none' });
+        expect(ws.getCell('B4').value).to.equal(null);
+      });
+
+      it('defaults to none when no function is given and labels the first column', () => {
+        const ws = new Excel.Workbook().addWorksheet('blort');
+        totalsTable(ws, {});
+        expect(ws.getCell('B4').value).to.equal(null);
+        expect(ws.getCell('A4').value).to.equal('Total');
+      });
+
+      it('rejects an unknown function', () => {
+        const ws = new Excel.Workbook().addWorksheet('blort');
+        expect(() => totalsTable(ws, { totalsRowFunction: 'bogus' })).to.throw('Invalid Totals Row Function: bogus');
+      });
+    });
+
+    describe('load', () => {
+      it('writes headers, rows and totals of a table model into a sheet', () => {
+        const wb = new Excel.Workbook();
+        const source = addTable('B2', wb.addWorksheet('source'));
+        const target = wb.addWorksheet('target');
+
+        const table = new Table(target);
+        table.model = source.model;
+        table.load(target);
+
+        checkTable('B2', target, values);
+        expect(target.getCell('B2').value).to.equal('Date');
+        expect(target.getCell('D6').value).to.equal('Word');
+        expect(target.getCell('C7').value).to.deep.equal({ formula: 'SUBTOTAL(104,TestTable[Id])', result: 4 });
+      });
+
+      it('omits the header and totals rows when the model has none', () => {
+        const wb = new Excel.Workbook();
+        const source = addTable('A1', wb.addWorksheet('source'));
+        source.model.headerRow = false;
+        source.model.totalsRow = false;
+        const target = wb.addWorksheet('target');
+
+        const table = new Table(target);
+        table.model = source.model;
+        table.load(target);
+
+        expect(target.rowCount).to.equal(4);
+        expect(target.getCell('A1').value).to.equalDate(new Date('2019-08-01'));
+      });
     });
   });
 });

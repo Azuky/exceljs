@@ -81,4 +81,42 @@ describe('XmlStream', () => {
     xmlStream.closeNode();
     expect(xmlStream.xml).to.equal('<root in="1" also="2"><valid/></root>');
   });
+
+  it('throws when adding an attribute once text has been written', () => {
+    const xmlStream = new XmlStream();
+    xmlStream.openNode('root');
+    xmlStream.writeText('text');
+    expect(() => xmlStream.addAttribute('a', 1)).to.throw('Cannot write attributes to node if it is not open');
+    expect(() => xmlStream.addAttributes({ a: 1 })).to.throw('Cannot write attributes to node if it is not open');
+  });
+
+  it('throws when adding an attribute with no node open', () => {
+    const xmlStream = new XmlStream();
+    expect(() => xmlStream.addAttribute('a', 1)).to.throw('Cannot write attributes to node if it is not open');
+  });
+
+  it('adds attributes to the open node and skips undefined ones', () => {
+    const xmlStream = new XmlStream();
+    xmlStream.openNode('root');
+    xmlStream.addAttribute('a', 1);
+    xmlStream.addAttribute('skipped', undefined);
+    xmlStream.addAttributes({ b: 'two', c: undefined });
+    expect(xmlStream.xml).to.equal('<root a="1" b="two"/>');
+  });
+
+  it('closeAll closes every open node', () => {
+    const xmlStream = new XmlStream();
+    xmlStream.openNode('a');
+    xmlStream.openNode('b');
+    xmlStream.openNode('c');
+    xmlStream.writeText('t');
+    xmlStream.closeAll();
+    expect(xmlStream.xml).to.equal('<a><b><c>t</c></b></a>');
+  });
+
+  it('closeAll on an empty stream does nothing', () => {
+    const xmlStream = new XmlStream();
+    xmlStream.closeAll();
+    expect(xmlStream.xml).to.equal('');
+  });
 });

@@ -103,4 +103,82 @@ describe('Anchor', () => {
       expect(context.anchor.nativeColOff).to.not.equal(pre);
     });
   });
+
+  describe('construction', () => {
+    it('starts at the origin without an address', () => {
+      expect(new Anchor(createSheetMock()).model).to.deep.equal({
+        nativeCol: 0,
+        nativeColOff: 0,
+        nativeRow: 0,
+        nativeRowOff: 0,
+      });
+    });
+
+    it('decodes a string address, applying the offset to the 1-based column and row', () => {
+      expect(new Anchor(createSheetMock(), 'B3', -1).model).to.deep.equal({
+        nativeCol: 1,
+        nativeColOff: 0,
+        nativeRow: 2,
+        nativeRowOff: 0,
+      });
+      expect(new Anchor(createSheetMock(), 'B3').model).to.deep.equal({
+        nativeCol: 2,
+        nativeColOff: 0,
+        nativeRow: 3,
+        nativeRowOff: 0,
+      });
+    });
+
+    it('accepts a native model, defaulting missing parts to 0', () => {
+      const anchor = new Anchor(createSheetMock(), { nativeCol: 4, nativeRowOff: 7 });
+      expect(anchor.model).to.deep.equal({ nativeCol: 4, nativeColOff: 0, nativeRow: 0, nativeRowOff: 7 });
+    });
+
+    it('accepts fractional col and row, splitting them into cell and offset', () => {
+      const anchor = new Anchor(createSheetMock(), { col: 1.5, row: 2.25 });
+      expect(anchor.nativeCol).to.equal(1);
+      expect(anchor.nativeColOff).to.equal(320000);
+      expect(anchor.nativeRow).to.equal(2);
+      expect(anchor.nativeRowOff).to.equal(45000);
+      expect(anchor.col).to.be.closeTo(1.5, 0.0001);
+      expect(anchor.row).to.be.closeTo(2.25, 0.0001);
+    });
+
+    it('falls back to the origin for an unrecognised object', () => {
+      expect(new Anchor(createSheetMock(), {}).model).to.deep.equal({
+        nativeCol: 0,
+        nativeColOff: 0,
+        nativeRow: 0,
+        nativeRowOff: 0,
+      });
+    });
+
+    it('asInstance keeps instances and nullish values', () => {
+      const anchor = new Anchor(createSheetMock(), 'A1', -1);
+      expect(Anchor.asInstance(anchor)).to.equal(anchor);
+      expect(Anchor.asInstance(null)).to.equal(null);
+      expect(Anchor.asInstance(undefined)).to.equal(undefined);
+    });
+
+    // known bug: asInstance calls `new Anchor(model)` so the model lands in the worksheet parameter and is ignored — see stage-2 notes
+    it.fails('asInstance wraps a plain model into an Anchor with the same position', () => {
+      const wrapped = Anchor.asInstance({ nativeCol: 3, nativeRow: 5 });
+      expect(wrapped).to.be.an.instanceOf(Anchor);
+      expect(wrapped.model).to.deep.equal({ nativeCol: 3, nativeColOff: 0, nativeRow: 5, nativeRowOff: 0 });
+    });
+  });
+
+  describe('model', () => {
+    it('round trips through the model setter', () => {
+      const source = new Anchor(createSheetMock(), {
+        nativeCol: 2,
+        nativeColOff: 100,
+        nativeRow: 3,
+        nativeRowOff: 200,
+      });
+      const target = new Anchor(createSheetMock());
+      target.model = source.model;
+      expect(target.model).to.deep.equal({ nativeCol: 2, nativeColOff: 100, nativeRow: 3, nativeRowOff: 200 });
+    });
+  });
 });

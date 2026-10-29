@@ -67,6 +67,21 @@ describe('chai-xml-ordered', () => {
       expect(() => expect('<a/>').xml.to.equal('')).to.throw();
     });
 
+    it('keeps a bare whitespace-only leaf as text, so <a> </a> differs from <a/>', () => {
+      expect(() => expect('<a> </a>').xml.to.equal('<a/>')).to.throw();
+      expect('<a> </a>').xml.to.equal('<a> </a>');
+    });
+
+    it('does not trim a bare whitespace-only leaf under .deep either', () => {
+      expect(() => expect('<a> </a>').xml.deep.equal('<a/>')).to.throw();
+      expect('<a> </a>').xml.deep.equal('<a> </a>');
+    });
+
+    it('compares text of mixed content as one concatenated chunk, ignoring child position', () => {
+      expect('<a>x<b/>y</a>').xml.to.equal('<a>xy<b/></a>');
+      expect(() => expect('<a>x<b/>y</a>').xml.to.equal('<a>x<b/>z</a>')).to.throw();
+    });
+
     it('falls back to plain equal outside an xml chain', () => {
       expect('<a/>').to.equal('<a/>');
       expect(() => expect('<a/>').to.equal('<b/>')).to.throw();

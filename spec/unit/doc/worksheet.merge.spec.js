@@ -65,6 +65,9 @@ describe('Worksheet', () => {
             const cell = ws.getCell(i, j);
             const masterCell = master ? ws.getCell(master) : cell;
             expect(cell.master.address).to.equal(masterCell.address);
+            // a cell that is no longer merged is its own master and no longer of type Merge
+            expect(cell.isMerged).to.equal(Boolean(master));
+            expect(cell.type === Excel.ValueType.Merge).to.equal(Boolean(master) && cell !== masterCell);
           }
         }
       };
@@ -203,6 +206,42 @@ describe('Worksheet', () => {
       }
       expect(nNumberVals).to.deep.equal(1);
       expect(nMergeVals).to.deep.equal(3);
+    });
+
+    it('unmerging cells that are not merged changes nothing', () => {
+      const wb = new Excel.Workbook();
+      const ws = wb.addWorksheet('blort');
+      ws.getCell('A1').value = 'x';
+      ws.mergeCells('D1:E2');
+
+      expect(() => ws.unMergeCells('A1:B2')).not.to.throw();
+      expect(ws.getCell('A1').value).to.equal('x');
+      expect(ws.getCell('D1').isMerged).to.equal(true);
+      expect(ws.getCell('E2').master.address).to.equal('D1');
+    });
+
+    it('unmerging a range leaves the unmerged cells empty again', () => {
+      const wb = new Excel.Workbook();
+      const ws = wb.addWorksheet('blort');
+      ws.getCell('A1').value = 'master';
+      ws.mergeCells('A1:B2');
+      ws.unMergeCells('A1:B2');
+      expect(ws.getCell('A1').value).to.equal('master');
+      expect(ws.getCell('B1').value).to.equal(null);
+      expect(ws.getCell('B2').value).to.equal(null);
+    });
+
+    it('hasMerges is true while any merge exists', () => {
+      const wb = new Excel.Workbook();
+      const ws = wb.addWorksheet('blort');
+      expect(ws.hasMerges).to.equal(false);
+      ws.mergeCells('A1:B2');
+      expect(ws.hasMerges).to.equal(true);
+      ws.mergeCells('D1:E2');
+      ws.unMergeCells('A1:B2');
+      expect(ws.hasMerges).to.equal(true);
+      ws.unMergeCells('D1');
+      expect(ws.hasMerges).to.equal(false);
     });
   });
 });

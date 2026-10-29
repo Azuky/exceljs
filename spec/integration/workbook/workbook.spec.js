@@ -1,3 +1,5 @@
+const { PassThrough, Readable } = require('stream');
+
 const testUtils = require('../../utils/index');
 
 const ExcelJS = verquire('exceljs');
@@ -819,34 +821,40 @@ describe('Workbook', () => {
   it('throws an error when xlsx file not found', () => {
     const wb = new ExcelJS.Workbook();
     let success = 0;
+    let failure;
     return wb.xlsx
       .readFile('./wb.doesnotexist.xlsx')
       .then((/* wb2 */) => {
         success = 1;
       })
-      .catch((/* error */) => {
+      .catch((error) => {
         success = 2;
-        // expect the right kind of error
+        failure = error;
       })
       .then(() => {
         expect(success).to.equal(2);
+        expect(failure).to.be.an.instanceOf(Error);
+        expect(failure.message).to.equal('File not found: ./wb.doesnotexist.xlsx');
       });
   });
 
   it('throws an error when csv file not found', () => {
     const wb = new ExcelJS.Workbook();
     let success = 0;
+    let failure;
     return wb.csv
       .readFile('./wb.doesnotexist.csv')
       .then((/* wb */) => {
         success = 1;
       })
-      .catch((/* error */) => {
+      .catch((error) => {
         success = 2;
-        // expect the right kind of error
+        failure = error;
       })
       .then(() => {
         expect(success).to.equal(2);
+        expect(failure).to.be.an.instanceOf(Error);
+        expect(failure.message).to.equal('File not found: ./wb.doesnotexist.csv');
       });
   });
   it('throw an error for wrong data type', async () => {
@@ -1038,6 +1046,271 @@ describe('Workbook', () => {
           const ws2b = wb2.getWorksheet('two');
           expect(ws2b.views).to.deep.equal(ws2.views);
         });
+    });
+  });
+
+  describe('CSV', () => {
+    function workbookWithRows(rows, name = 'data') {
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet(name);
+      rows.forEach((values, i) => {
+        if (values) ws.getRow(i + 1).values = values;
+      });
+      return { wb, ws };
+    }
+
+    const bufferText = async (wb, options) => (await wb.csv.writeBuffer(options)).toString();
+
+    async function readCsv(text, options) {
+      const wb = new ExcelJS.Workbook();
+      const ws = await wb.csv.read(Readable.from([text]), options);
+      return { wb, ws };
+    }
+
+    // cell by cell, so that empty cells read as null instead of holes
+    const rowValues = (ws, rowNumber = 1) => {
+      const values = [];
+      for (let col = 1; col <= ws.columnCount; col++) {
+        values.push(ws.getCell(rowNumber, col).value);
+      }
+      return values;
+    };
+
+    describe('writeBuffer', () => {
+      it('writes each row as a line without a trailing newline', async () => {
+        const { wb } = workbookWithRows([
+          ['a', 1],
+          ['b', 2],
+          ['c', 3],
+        ]);
+        expect(await bufferText(wb)).to.equal('a,1\nb,2\nc,3');
+      });
+
+      it('writes a blank line for a missing row by default', async () => {
+        const { wb } = workbookWithRows([['a'], null, ['b']]);
+        expect(await bufferText(wb)).to.equal('a\n\nb');
+      });
+
+      it('skips missing rows when includeEmptyRows is false', async () => {
+        const { wb } = workbookWithRows([['a'], null, ['b']]);
+        expect(await bufferText(wb, { includeEmptyRows: false })).to.equal('a\nb');
+      });
+
+      it('writes the first worksheet when no sheet is named', async () => {
+        const { wb } = workbookWithRows([['first']], 'one');
+        wb.addWorksheet('two').addRow(['second']);
+        expect(await bufferText(wb)).to.equal('first');
+      });
+
+      it('selects the worksheet by sheetId or sheetName', async () => {
+        const { wb } = workbookWithRows([['first']], 'one');
+        wb.addWorksheet('two').addRow(['second']);
+        expect(await bufferText(wb, { sheetId: 2 })).to.equal('second');
+        expect(await bufferText(wb, { sheetName: 'two' })).to.equal('second');
+        expect(await bufferText(wb, { sheetName: 'one' })).to.equal('first');
+      });
+
+      it('writes nothing for an unknown sheet', async () => {
+        const { wb } = workbookWithRows([['first']]);
+        expect(await bufferText(wb, { sheetName: 'nope' })).to.equal('');
+      });
+
+      it('writes dates in UTC ISO format when dateUTC is set', async () => {
+        const { wb } = workbookWithRows([[new Date('2020-01-02T03:04:05Z')]]);
+        expect(await bufferText(wb, { dateUTC: true })).to.equal('2020-01-02T03:04:05Z');
+      });
+
+      it('applies dateFormat with and without dateUTC', async () => {
+        const { wb } = workbookWithRows([[new Date('2020-06-15T12:00:00Z')]]);
+        expect(await bufferText(wb, { dateUTC: true, dateFormat: 'YYYY/MM/DD HH:mm' })).to.equal('2020/06/15 12:00');
+        expect(await bufferText(wb, { dateFormat: 'YYYY' })).to.equal('2020');
+      });
+
+      it('writes text, hyperlink, error, boolean and formula values as plain fields', async () => {
+        const { wb } = workbookWithRows([
+          [
+            'str',
+            0,
+            true,
+            false,
+            { text: 'label', hyperlink: 'http://example.com' },
+            { error: '#N/A' },
+            { formula: 'A1', result: 5 },
+            { formula: 'A1', result: 'text' },
+          ],
+        ]);
+        expect(await bufferText(wb)).to.equal('str,0,true,false,http://example.com,#N/A,5,text');
+      });
+
+      it('hands raw cell values to a custom map', async () => {
+        const { wb } = workbookWithRows([['a', 2, { formula: 'A1', result: 'x' }]]);
+        const seen = [];
+        const text = await bufferText(wb, {
+          map: (value) => {
+            seen.push(value);
+            return `<${typeof value}>`;
+          },
+        });
+        expect(seen).to.deep.equal(['a', 2, { formula: 'A1', result: 'x' }]);
+        expect(text).to.equal('<string>,<number>,<object>');
+      });
+
+      // known bug: falsy formula results (0, false) are written as empty fields because of `value.result || ''` — see stage-2 notes
+      it.fails('writes falsy formula results', async () => {
+        const { wb } = workbookWithRows([
+          [
+            { formula: '1-1', result: 0 },
+            { formula: 'A1', result: false },
+          ],
+        ]);
+        expect(await bufferText(wb)).to.equal('0,false');
+      });
+
+      // known bug (needs owner confirmation, may be by design): rich text cells are written as a JSON blob instead of their text — see stage-2 notes
+      it.fails('writes a rich text cell as its plain concatenated text', async () => {
+        const { wb } = workbookWithRows([[{ richText: [{ text: 'Hel' }, { text: 'lo' }] }]]);
+        expect(await bufferText(wb)).to.equal('Hello');
+      });
+    });
+
+    describe('write', () => {
+      it('writes to a stream and resolves once it has finished', async () => {
+        const { wb } = workbookWithRows([
+          ['a', 'b'],
+          ['c', 'd'],
+        ]);
+        const stream = new PassThrough();
+        const chunks = [];
+        stream.on('data', (chunk) => chunks.push(chunk));
+        await wb.csv.write(stream, { sheetName: 'data' });
+        expect(Buffer.concat(chunks).toString()).to.equal('a,b\nc,d');
+      });
+
+      it('quotes fields that contain the delimiter, quotes or newlines', async () => {
+        const { wb } = workbookWithRows([['a,b', 'say "hi"', 'two\nlines']]);
+        expect(await bufferText(wb)).to.equal('"a,b","say ""hi""","two\nlines"');
+      });
+    });
+
+    describe('read', () => {
+      it('converts special values and numbers and keeps other text', async () => {
+        const { ws } = await readCsv('x,#N/A,true,Infinity,1e3,,2020-01-02\n');
+        expect(rowValues(ws)).to.deep.equal([
+          'x',
+          { error: '#N/A' },
+          true,
+          'Infinity',
+          1000,
+          null,
+          new Date(2020, 0, 2),
+        ]);
+      });
+
+      it('recognises every error literal and boolean spelling in lower case only', async () => {
+        const { ws } = await readCsv('#REF!,#NAME?,#DIV/0!,#NULL!,#VALUE!,#NUM!,false,TRUE,True\n');
+        expect(rowValues(ws)).to.deep.equal([
+          { error: '#REF!' },
+          { error: '#NAME?' },
+          { error: '#DIV/0!' },
+          { error: '#NULL!' },
+          { error: '#VALUE!' },
+          { error: '#NUM!' },
+          false,
+          'TRUE',
+          'True',
+        ]);
+      });
+
+      it('reads hexadecimal and exponent notation as numbers', async () => {
+        const { ws } = await readCsv('0x10,1e3,-2.5,007\n');
+        expect(rowValues(ws)).to.deep.equal([16, 1000, -2.5, 7]);
+      });
+
+      it('parses MM-DD-YYYY, YYYY-MM-DD and YYYY-MM-DDTHH:mm:ss as local dates', async () => {
+        const { ws } = await readCsv('01-02-2020,2020-01-02,2020-01-02T03:04:05\n');
+        expect(rowValues(ws)).to.deep.equal([
+          new Date(2020, 0, 2),
+          new Date(2020, 0, 2),
+          new Date(2020, 0, 2, 3, 4, 5),
+        ]);
+      });
+
+      it('leaves text that merely looks like a date as a string', async () => {
+        const { ws } = await readCsv('2020-13-45,01/02/2020\n');
+        expect(rowValues(ws)).to.deep.equal(['2020-13-45', '01/02/2020']);
+      });
+
+      // known bug: dateFormats 'YYYY-MM-DD[T]HH:mm:ssZ' is matched strictly against the local offset, so a UTC "...Z" timestamp (what write emits with dateUTC) stays a string — see stage-2 notes
+      it.fails('reads back the UTC timestamps that write emits with dateUTC', async () => {
+        const original = new Date('2020-01-02T03:04:05Z');
+        const { wb } = workbookWithRows([[original]]);
+        const text = await bufferText(wb, { dateUTC: true });
+        const { ws } = await readCsv(text);
+        expect(ws.getCell('A1').value).to.deep.equal(original);
+      });
+
+      it('uses custom dateFormats', async () => {
+        const { ws } = await readCsv('31/12/2020,2020-12-31\n', { dateFormats: ['DD/MM/YYYY'] });
+        expect(rowValues(ws)).to.deep.equal([new Date(2020, 11, 31), '2020-12-31']);
+      });
+
+      it('lets options.map replace the default conversion', async () => {
+        const { ws } = await readCsv('a,1,true\n', { map: (datum) => datum.toUpperCase() });
+        expect(rowValues(ws)).to.deep.equal(['A', '1', 'TRUE']);
+      });
+
+      it('names the worksheet sheet1 by default and by options.sheetName when given', async () => {
+        const defaults = await readCsv('a\n');
+        expect(defaults.ws.name).to.equal('sheet1');
+        expect(defaults.wb.worksheets).to.have.length(1);
+
+        const named = await readCsv('a\n', { sheetName: 'imported' });
+        expect(named.ws.name).to.equal('imported');
+        expect(named.wb.getWorksheet('imported')).to.equal(named.ws);
+      });
+
+      it('reads multiple rows and keeps empty fields as null', async () => {
+        const { ws } = await readCsv('a,b\n,d\n');
+        expect(ws.rowCount).to.equal(2);
+        expect(rowValues(ws, 2)).to.deep.equal([null, 'd']);
+      });
+
+      it('passes parserOptions to the parser', async () => {
+        const { ws } = await readCsv('a;b\n', { parserOptions: { delimiter: ';' } });
+        expect(rowValues(ws)).to.deep.equal(['a', 'b']);
+      });
+
+      it('rejects when the parser fails on malformed input', async () => {
+        const wb = new ExcelJS.Workbook();
+        let failure;
+        try {
+          await wb.csv.read(Readable.from(['a,"b\n']));
+        } catch (error) {
+          failure = error;
+        }
+        expect(failure).to.be.an.instanceOf(Error);
+        expect(failure.message).to.match(/missing closing/);
+      });
+
+      it('rejects when the parser sees a stray character after a closing quote', async () => {
+        const wb = new ExcelJS.Workbook();
+        let failure;
+        try {
+          await wb.csv.read(Readable.from(['a,b\n"c"x,d\n']));
+        } catch (error) {
+          failure = error;
+        }
+        expect(failure).to.be.an.instanceOf(Error);
+        expect(failure.message).to.match(/expected: ','/);
+      });
+    });
+
+    describe('createInputStream', () => {
+      it('is deprecated and throws', () => {
+        const wb = new ExcelJS.Workbook();
+        expect(() => wb.csv.createInputStream()).to.throw(/deprecated/);
+        expect(() => wb.csv.createInputStream()).to.throw(/CSV#read/);
+      });
     });
   });
 });
