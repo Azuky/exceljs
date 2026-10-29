@@ -89,7 +89,8 @@ describe('StreamBuf', () => {
   });
 
   describe('write after end', () => {
-    // characterises current behaviour: unlike a plain node Writable, StreamBuf does not reject writes after end()
+    // characterises current behaviour: unlike a plain node Writable, StreamBuf does not reject writes after end().
+    // Accepted by the owner: StreamBuf is internal and no caller writes after ending it (see spec/KNOWN-BUGS.md)
     it('keeps accepting writes after end() and appends them to the buffer', async () => {
       const stream = new StreamBuf();
       stream.write('ab');
