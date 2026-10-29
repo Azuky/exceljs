@@ -18,7 +18,7 @@ export default defineConfig([
   {
     // thin ESM wrapper over dist/index.cjs: keep the sibling CJS bundle external
     ...shared,
-    entry: { index: 'lib/index.mjs' },
+    entry: { index: 'scripts/build/esm-wrapper.mjs' },
     format: 'esm',
     plugins: [
       {

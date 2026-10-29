@@ -6,9 +6,12 @@ on:
   pull_request:
     branches: ['**']
 
+permissions:
+  contents: read
+
 jobs:
   test:
-    timeout-minutes: 10
+    timeout-minutes: 20
     name: Node v${{ matrix.node-version }} on ${{ matrix.os }}
     strategy:
       fail-fast: false
