@@ -1,8 +1,33 @@
 {
   "name": "exceljs",
   "version": "4.4.0",
-  "description": "Excel Workbook Manager - Read and Write xlsx and csv Files.",
   "private": false,
+  "description": "Excel Workbook Manager - Read and Write xlsx and csv Files.",
+  "keywords": [
+    "alignment",
+    "border",
+    "csv",
+    "data validations",
+    "defined names",
+    "excel",
+    "fill",
+    "font",
+    "format",
+    "frozen",
+    "in-cell format",
+    "json",
+    "number",
+    "number format",
+    "office",
+    "outlineLevel",
+    "pageSetup",
+    "rich text",
+    "split",
+    "spreadsheet",
+    "views",
+    "workbook",
+    "xlsx"
+  ],
   "license": "MIT",
   "author": {
     "name": "Guyon Roche",
@@ -12,13 +37,6 @@
     "type": "git",
     "url": "https://github.com/exceljs/exceljs.git"
   },
-  "engines": {
-    "node": ">=22"
-  },
-  "packageManager": "pnpm@12.14.0",
-  "main": "./excel.js",
-  "browser": "./dist/exceljs.min.js",
-  "types": "./index.d.ts",
   "files": [
     "dist",
     "lib",
@@ -29,6 +47,9 @@
     "index.ts",
     "index.d.ts"
   ],
+  "main": "./excel.js",
+  "browser": "./dist/exceljs.min.js",
+  "types": "./index.d.ts",
   "scripts": {
     "test": "npm run test:full",
     "test:es5": "export EXCEL_BUILD=es5 && npm run test:full",
@@ -61,31 +82,6 @@
     "format:check": "oxfmt --check",
     "prepare": "husky"
   },
-  "keywords": [
-    "xlsx",
-    "json",
-    "csv",
-    "excel",
-    "font",
-    "border",
-    "fill",
-    "number",
-    "format",
-    "number format",
-    "alignment",
-    "office",
-    "spreadsheet",
-    "workbook",
-    "defined names",
-    "data validations",
-    "rich text",
-    "in-cell format",
-    "outlineLevel",
-    "views",
-    "frozen",
-    "split",
-    "pageSetup"
-  ],
   "dependencies": {
     "archiver": "^5.0.0",
     "dayjs": "^1.8.34",
@@ -136,5 +132,9 @@
       "oxfmt",
       "oxlint --fix"
     ]
-  }
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "pnpm@12.14.0"
 }

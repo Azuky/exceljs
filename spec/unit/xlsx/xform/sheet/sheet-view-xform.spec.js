@@ -7,11 +7,8 @@ const expectations = [
   {
     title: 'Normal',
     create: () => new SheetViewXform(),
-    preparedModel: {workbookViewId: 0, state: 'normal', activeCell: 'G4'},
-    xml:
-      '<sheetView workbookViewId="0">' +
-      '<selection activeCell="G4" sqref="G4"/>' +
-      '</sheetView>',
+    preparedModel: { workbookViewId: 0, state: 'normal', activeCell: 'G4' },
+    xml: '<sheetView workbookViewId="0">' + '<selection activeCell="G4" sqref="G4"/>' + '</sheetView>',
     parsedModel: {
       workbookViewId: 0,
       rightToLeft: false,
@@ -216,7 +213,7 @@ const expectations = [
         childXform: new SheetViewXform(),
       }),
     preparedModel: [
-      {workbookViewId: 0, state: 'normal', activeCell: 'G4'},
+      { workbookViewId: 0, state: 'normal', activeCell: 'G4' },
       {
         workbookViewId: 1,
         state: 'frozen',
@@ -268,7 +265,7 @@ const expectations = [
   {
     title: 'Right To Left',
     create: () => new SheetViewXform(),
-    preparedModel: {rightToLeft: true},
+    preparedModel: { rightToLeft: true },
     xml: '<sheetView workbookViewId="0" rightToLeft="1"></sheetView>',
     parsedModel: {
       workbookViewId: 0,

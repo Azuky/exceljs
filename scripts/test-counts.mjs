@@ -1,9 +1,9 @@
 // Runs the mocha suites with the json reporter and records test counts.
 // Usage: node scripts/test-counts.mjs --out <file.json>
-import {spawnSync} from 'node:child_process';
-import {mkdirSync, writeFileSync} from 'node:fs';
-import {dirname, join, resolve} from 'node:path';
-import {fileURLToPath} from 'node:url';
+import { spawnSync } from 'node:child_process';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -20,18 +20,20 @@ if (outIdx === -1 || !process.argv[outIdx + 1]) {
 }
 const outFile = resolve(process.argv[outIdx + 1]);
 
-const env = {...process.env};
+const env = { ...process.env };
 delete env.EXCEL_BUILD;
 
-const stderrTail = res => (res.stderr || '').trim().split('\n').slice(-20).join('\n');
+const stderrTail = (res) => (res.stderr || '').trim().split('\n').slice(-20).join('\n');
 
 const suites = {};
 for (const [name, args] of Object.entries(SUITES)) {
-  const res = spawnSync(
-    join(root, 'node_modules/.bin/mocha'),
-    [...args, '--reporter', 'json'],
-    {cwd: root, env, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 1 << 29}
-  );
+  const res = spawnSync(join(root, 'node_modules/.bin/mocha'), [...args, '--reporter', 'json'], {
+    cwd: root,
+    env,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+    maxBuffer: 1 << 29,
+  });
   if (res.error) {
     throw new Error(`suite ${name}: failed to run mocha: ${res.error.message}\n${stderrTail(res)}`);
   }
@@ -43,20 +45,18 @@ for (const [name, args] of Object.entries(SUITES)) {
     if (start === -1) throw new Error('report marker not found in stdout');
     report = JSON.parse(res.stdout.slice(start));
   } catch (err) {
-    throw new Error(
-      `suite ${name}: no parsable mocha JSON (exit ${res.status}): ${err.message}\n${stderrTail(res)}`
-    );
+    throw new Error(`suite ${name}: no parsable mocha JSON (exit ${res.status}): ${err.message}\n${stderrTail(res)}`);
   }
-  const {tests, passes, failures, pending} = report.stats;
+  const { tests, passes, failures, pending } = report.stats;
   suites[name] = {
     tests,
     passes,
     failures,
     pending,
-    failingTitles: report.failures.map(f => f.fullTitle),
+    failingTitles: report.failures.map((f) => f.fullTitle),
   };
   console.log(`${name}: tests=${tests} passes=${passes} failures=${failures} pending=${pending}`);
 }
 
-mkdirSync(dirname(outFile), {recursive: true});
-writeFileSync(outFile, `${JSON.stringify({node: process.version, suites}, null, 2)}\n`);
+mkdirSync(dirname(outFile), { recursive: true });
+writeFileSync(outFile, `${JSON.stringify({ node: process.version, suites }, null, 2)}\n`);
