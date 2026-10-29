@@ -1,3 +1,5 @@
+const { knownBug } = require('../../utils/known-bug');
+
 const colCache = verquire('utils/col-cache');
 const Cell = verquire('doc/cell');
 const Enums = verquire('doc/enums');
@@ -426,14 +428,22 @@ describe('Cell', () => {
     });
 
     // known bug: FormulaValue.effectiveType has no branch for boolean results and reports Null — see stage-2 notes
-    it.fails('is Boolean for a boolean result', () => {
-      expect(formulaCell(true).effectiveType).to.equal(Enums.ValueType.Boolean);
-    });
+    knownBug(
+      'is Boolean for a boolean result',
+      () => {
+        expect(formulaCell(true).effectiveType).to.equal(Enums.ValueType.Boolean);
+      },
+      /expected \+0 to equal 9/,
+    );
 
     // known bug: FormulaValue.effectiveType has no branch for error results and reports Null — see stage-2 notes
-    it.fails('is Error for an error result', () => {
-      expect(formulaCell({ error: '#N/A' }).effectiveType).to.equal(Enums.ValueType.Error);
-    });
+    knownBug(
+      'is Error for an error result',
+      () => {
+        expect(formulaCell({ error: '#N/A' }).effectiveType).to.equal(Enums.ValueType.Error);
+      },
+      /expected \+0 to equal 10/,
+    );
 
     it('exposes the formula, result and formula type', () => {
       const cell = formulaCell(2);
@@ -472,9 +482,13 @@ describe('Cell', () => {
     });
 
     // known bug: RichTextValue.toCsvString reads this.text, which the value class does not have, and throws — see stage-2 notes
-    it.fails('toCsvString renders a rich text cell as its quoted plain text', () => {
-      expect(cellWith({ richText: [{ text: 'Hel' }, { text: 'lo' }] }).toCsvString()).to.equal('"Hello"');
-    });
+    knownBug(
+      'toCsvString renders a rich text cell as its quoted plain text',
+      () => {
+        expect(cellWith({ richText: [{ text: 'Hel' }, { text: 'lo' }] }).toCsvString()).to.equal('"Hello"');
+      },
+      /reading 'replace'/,
+    );
 
     it('isHyperlink is true only for hyperlink cells', () => {
       expect(cellWith({ text: 'link', hyperlink: 'http://example.com' }).isHyperlink).to.equal(true);

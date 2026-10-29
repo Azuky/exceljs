@@ -23,7 +23,7 @@ describe('Encryptor', () => {
     });
 
     it('throws for an unknown algorithm', () => {
-      expect(() => Encryptor.hash('nope-256', Buffer.from('a'))).to.throw();
+      expect(() => Encryptor.hash('nope-256', Buffer.from('a'))).to.throw(/Digest method not supported/);
     });
   });
 

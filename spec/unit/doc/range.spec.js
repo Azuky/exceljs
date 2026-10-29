@@ -1,3 +1,5 @@
+const { knownBug } = require('../../utils/known-bug');
+
 const Range = verquire('doc/range');
 
 describe('Range', () => {
@@ -219,11 +221,15 @@ describe('Range', () => {
     });
 
     // known bug: setTLBR(tl, br, sheetName) re-applies the corners with an undefined sheet name, dropping it — see stage-2 notes
-    it.fails('takes the sheet name from the third argument of [tl, br, sheetName]', () => {
-      const range = new Range('A1', 'B2', 'Sheet1');
-      expect(range.sheetName).to.equal('Sheet1');
-      expect(range.range).to.equal('Sheet1!A1:B2');
-    });
+    knownBug(
+      'takes the sheet name from the third argument of [tl, br, sheetName]',
+      () => {
+        const range = new Range('A1', 'B2', 'Sheet1');
+        expect(range.sheetName).to.equal('Sheet1');
+        expect(range.range).to.equal('Sheet1!A1:B2');
+      },
+      /expected undefined to equal 'Sheet1'/,
+    );
 
     it('takes the sheet name from the fifth argument of [t, l, b, r, sheetName]', () => {
       const range = new Range(1, 1, 2, 2, 'Sheet1');

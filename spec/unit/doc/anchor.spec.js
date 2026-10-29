@@ -1,3 +1,5 @@
+const { knownBug } = require('../../utils/known-bug');
+
 const { createSheetMock } = require('../../utils/index');
 
 const Anchor = verquire('doc/anchor');
@@ -161,11 +163,15 @@ describe('Anchor', () => {
     });
 
     // known bug: asInstance calls `new Anchor(model)` so the model lands in the worksheet parameter and is ignored — see stage-2 notes
-    it.fails('asInstance wraps a plain model into an Anchor with the same position', () => {
-      const wrapped = Anchor.asInstance({ nativeCol: 3, nativeRow: 5 });
-      expect(wrapped).to.be.an.instanceOf(Anchor);
-      expect(wrapped.model).to.deep.equal({ nativeCol: 3, nativeColOff: 0, nativeRow: 5, nativeRowOff: 0 });
-    });
+    knownBug(
+      'asInstance wraps a plain model into an Anchor with the same position',
+      () => {
+        const wrapped = Anchor.asInstance({ nativeCol: 3, nativeRow: 5 });
+        expect(wrapped).to.be.an.instanceOf(Anchor);
+        expect(wrapped.model).to.deep.equal({ nativeCol: 3, nativeColOff: 0, nativeRow: 5, nativeRowOff: 0 });
+      },
+      /nativeCol: \+0.*to deeply equal/s,
+    );
   });
 
   describe('model', () => {

@@ -1,3 +1,5 @@
+const { knownBug } = require('../../utils/known-bug');
+
 const colCache = verquire('utils/col-cache');
 const Excel = verquire('exceljs');
 const Table = verquire('doc/table');
@@ -204,13 +206,17 @@ describe('Worksheet', () => {
       });
 
       // known bug: the setter is declared as `displayNamename` and the getter reads `displyName`, so assigning displayName has no effect — see stage-2 notes
-      it.fails('stores a new display name', () => {
-        const ws = new Excel.Workbook().addWorksheet('blort');
-        const table = addTable('A1', ws);
-        table.displayName = 'Renamed';
-        table.commit();
-        expect(table.displayName).to.equal('Renamed');
-      });
+      knownBug(
+        'stores a new display name',
+        () => {
+          const ws = new Excel.Workbook().addWorksheet('blort');
+          const table = addTable('A1', ws);
+          table.displayName = 'Renamed';
+          table.commit();
+          expect(table.displayName).to.equal('Renamed');
+        },
+        /only a getter/,
+      );
     });
 
     describe('registry', () => {
