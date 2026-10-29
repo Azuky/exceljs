@@ -13,7 +13,7 @@ const expectations = [
       return this.preparedModel;
     },
     xml: '<hyperlink ref="B6" r:id="rId1"/>',
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
   {
     title: 'Internal Link',
@@ -25,7 +25,7 @@ const expectations = [
       return this.preparedModel;
     },
     xml: '<hyperlink ref="B6" r:id="rId1" location="sheet1!B2"/>',
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
 ];
 

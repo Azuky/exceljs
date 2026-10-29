@@ -13,7 +13,7 @@ const expectations = [
     parsedModel: {
       oddHeader: '&CExceljs',
     },
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
   {
     title: 'set oddFooter',
@@ -25,7 +25,7 @@ const expectations = [
     parsedModel: {
       oddFooter: '&CExceljs',
     },
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
   {
     title: 'set oddHeader position',
@@ -37,7 +37,7 @@ const expectations = [
     parsedModel: {
       oddHeader: '&LExceljs',
     },
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
   {
     title: 'set firstFooter',
@@ -57,7 +57,7 @@ const expectations = [
       firstHeader: '&CHome',
       firstFooter: '&CHome',
     },
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
   {
     title: 'set differentOddEven',
@@ -77,7 +77,7 @@ const expectations = [
       evenHeader: '&Ceven Header',
       evenFooter: '&Ceven Footer',
     },
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
   {
     title: 'set font style',
@@ -89,7 +89,7 @@ const expectations = [
     parsedModel: {
       oddFooter: '&C&B&KFF0000Red Bold',
     },
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
 ];
 

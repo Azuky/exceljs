@@ -23,7 +23,7 @@ const expectations = [
       outlineLevelRow: 5,
       outlineLevelCol: 2,
     },
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
   {
     title: 'default',
@@ -38,7 +38,7 @@ const expectations = [
       outlineLevelRow: 0,
       outlineLevelCol: 0,
     },
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
 ];
 

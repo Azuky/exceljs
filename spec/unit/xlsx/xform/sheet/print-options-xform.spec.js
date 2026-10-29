@@ -10,8 +10,8 @@ const expectations = [
     },
     preparedModel: {},
     xml: '',
-    parsedModel: {},
-    tests: ['render', 'renderIn'],
+    parsedModel: undefined,
+    tests: ['render', 'renderIn', 'parse'],
   },
   {
     title: 'gridlines',
@@ -26,7 +26,7 @@ const expectations = [
       horizontalCentered: false,
       verticalCentered: false,
     },
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
   {
     title: 'headers',
@@ -41,7 +41,7 @@ const expectations = [
       horizontalCentered: false,
       verticalCentered: false,
     },
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
   {
     title: 'centered',
@@ -56,7 +56,7 @@ const expectations = [
       horizontalCentered: true,
       verticalCentered: true,
     },
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
 ];
 

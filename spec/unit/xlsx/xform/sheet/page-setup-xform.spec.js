@@ -46,7 +46,7 @@ const expectations = [
       pageOrder: 'downThenOver',
       scale: 100,
     },
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
   {
     title: 'options',
@@ -79,7 +79,7 @@ const expectations = [
       fitToWidth: 1,
       scale: 100,
     },
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
   {
     title: 'defaults',
@@ -108,7 +108,7 @@ const expectations = [
       fitToWidth: 1,
       scale: 100,
     },
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
   {
     title: 'scale and fit',
@@ -139,7 +139,7 @@ const expectations = [
       errors: 'displayed',
       pageOrder: 'downThenOver',
     },
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
 ];
 

@@ -10,8 +10,8 @@ const expectations = [
     },
     preparedModel: {},
     xml: '',
-    parsedModel: {},
-    tests: ['render', 'renderIn'],
+    parsedModel: undefined,
+    tests: ['render', 'renderIn', 'parse'],
   },
   {
     title: 'tabColor',
