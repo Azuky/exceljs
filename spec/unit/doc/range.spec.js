@@ -220,7 +220,7 @@ describe('Range', () => {
       expect(new Range('Sheet1!A1:B2').intersects(new Range('B2:C3'))).to.equal(true);
     });
 
-    // known bug: setTLBR(tl, br, sheetName) re-applies the corners with an undefined sheet name, dropping it — see stage-2 notes
+    // known bug: setTLBR(tl, br, sheetName) re-applies the corners with an undefined sheet name, dropping it — see spec/KNOWN-BUGS.md
     knownBug(
       'takes the sheet name from the third argument of [tl, br, sheetName]',
       () => {

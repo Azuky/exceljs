@@ -205,7 +205,7 @@ describe('Worksheet', () => {
         expect(table.displayName).to.equal('TestTable');
       });
 
-      // known bug: the setter is declared as `displayNamename` and the getter reads `displyName`, so assigning displayName has no effect — see stage-2 notes
+      // known bug: the setter is declared as `displayNamename` and the getter reads `displyName`, so assigning displayName has no effect — see spec/KNOWN-BUGS.md
       knownBug(
         'stores a new display name',
         () => {

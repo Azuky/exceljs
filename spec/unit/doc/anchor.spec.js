@@ -162,7 +162,7 @@ describe('Anchor', () => {
       expect(Anchor.asInstance(undefined)).to.equal(undefined);
     });
 
-    // known bug: asInstance calls `new Anchor(model)` so the model lands in the worksheet parameter and is ignored — see stage-2 notes
+    // known bug: asInstance calls `new Anchor(model)` so the model lands in the worksheet parameter and is ignored — see spec/KNOWN-BUGS.md
     knownBug(
       'asInstance wraps a plain model into an Anchor with the same position',
       () => {

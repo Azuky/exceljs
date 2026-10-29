@@ -62,7 +62,7 @@ describe('StreamBuf', () => {
   });
 
   describe('partial reads', () => {
-    // known bug: BufferChunk read(size) copies up to index `size` instead of `iRead + size`, so a second partial read returns NUL bytes — see stage-2 notes
+    // known bug: BufferChunk read(size) copies up to index `size` instead of `iRead + size`, so a second partial read returns NUL bytes — see spec/KNOWN-BUGS.md
     knownBug(
       'reads a buffer back in consecutive slices',
       () => {

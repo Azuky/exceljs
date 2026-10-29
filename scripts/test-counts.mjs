@@ -28,7 +28,7 @@ try {
   for (const name of SUITES) {
     const reportFile = join(tmpDir, `${name}.json`);
     const res = spawnSync(
-      join(root, 'node_modules/.bin/vitest'),
+      join(root, `node_modules/.bin/vitest${process.platform === 'win32' ? '.cmd' : ''}`),
       ['run', '--project', name, '--reporter=json', `--outputFile=${reportFile}`],
       {
         cwd: root,
@@ -36,6 +36,8 @@ try {
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'pipe'],
         maxBuffer: 1 << 29,
+        // .cmd shims need a shell on Windows
+        shell: process.platform === 'win32',
       },
     );
     if (res.error) {

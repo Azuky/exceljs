@@ -427,7 +427,7 @@ describe('Cell', () => {
       expect(formulaCell(null).effectiveType).to.equal(Enums.ValueType.Null);
     });
 
-    // known bug: FormulaValue.effectiveType has no branch for boolean results and reports Null — see stage-2 notes
+    // known bug: FormulaValue.effectiveType has no branch for boolean results and reports Null — see spec/KNOWN-BUGS.md
     knownBug(
       'is Boolean for a boolean result',
       () => {
@@ -436,7 +436,7 @@ describe('Cell', () => {
       /expected \+0 to equal 9/,
     );
 
-    // known bug: FormulaValue.effectiveType has no branch for error results and reports Null — see stage-2 notes
+    // known bug: FormulaValue.effectiveType has no branch for error results and reports Null — see spec/KNOWN-BUGS.md
     knownBug(
       'is Error for an error result',
       () => {
@@ -481,7 +481,7 @@ describe('Cell', () => {
       expect(String(cellWith({ formula: '1+1', result: 3 }).toCsvString())).to.equal('3');
     });
 
-    // known bug: RichTextValue.toCsvString reads this.text, which the value class does not have, and throws — see stage-2 notes
+    // known bug: RichTextValue.toCsvString reads this.text, which the value class does not have, and throws — see spec/KNOWN-BUGS.md
     knownBug(
       'toCsvString renders a rich text cell as its quoted plain text',
       () => {
