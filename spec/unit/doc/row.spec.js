@@ -1,6 +1,7 @@
 const { createSheetMock } = require('../../utils/index');
 
 const Enums = verquire('doc/enums');
+const Excel = verquire('exceljs');
 
 describe('Row', () => {
   it('stores cells', () => {
@@ -9,19 +10,19 @@ describe('Row', () => {
 
     const row1 = sheet.getRow(1);
     expect(row1.number).to.equal(1);
-    expect(row1.hasValues).to.not.be.ok();
+    expect(row1.hasValues).to.not.be.ok;
 
     const a1 = row1.getCell(1);
     expect(a1.address).to.equal('A1');
     expect(a1.type).to.equal(Enums.ValueType.Null);
-    expect(row1.hasValues).to.not.be.ok();
+    expect(row1.hasValues).to.not.be.ok;
 
     expect(row1.getCell('A')).to.equal(a1);
     expect(row1.getCell('name')).to.equal(a1);
 
     a1.value = 5;
     expect(a1.type).to.equal(Enums.ValueType.Number);
-    expect(row1.hasValues).to.be.ok();
+    expect(row1.hasValues).to.be.ok;
 
     const b1 = row1.getCell(2);
     expect(b1.address).to.equal('B1');
@@ -57,7 +58,7 @@ describe('Row', () => {
     expect(count).to.equal(3);
 
     const row2 = sheet.getRow(2);
-    expect(row2.dimensions).to.be.null();
+    expect(row2.dimensions).to.be.null;
   });
 
   it('stores values by whole row', () => {
@@ -74,7 +75,7 @@ describe('Row', () => {
     row1.values = [5, 'Hello, World!', null];
     expect(row1.getCell(1).value).to.equal(5);
     expect(row1.getCell(2).value).to.equal('Hello, World!');
-    expect(row1.getCell(3).value).to.be.null();
+    expect(row1.getCell(3).value).to.be.null;
     expect(row1.values).to.deep.equal([, 5, 'Hello, World!']);
 
     // set values by sparse array
@@ -84,7 +85,7 @@ describe('Row', () => {
     values[5] = now;
     row1.values = values;
     expect(row1.getCell(1).value).to.equal(7);
-    expect(row1.getCell(2).value).to.be.null();
+    expect(row1.getCell(2).value).to.be.null;
     expect(row1.getCell(3).value).to.equal('Not Null!');
     expect(row1.getCell(5).type).to.equal(Enums.ValueType.Date);
     expect(row1.values).to.deep.equal([, 7, , 'Not Null!', , now]);
@@ -98,7 +99,7 @@ describe('Row', () => {
     expect(row1.getCell(1).value).to.equal(9);
     expect(row1.getCell(2).value).to.equal('Dobbie');
     expect(row1.getCell(3).type).to.equal(Enums.ValueType.Date);
-    expect(row1.getCell(5).value).to.be.null();
+    expect(row1.getCell(5).value).to.be.null;
     expect(row1.values).to.deep.equal([, 9, 'Dobbie', now]);
   });
 
@@ -140,9 +141,9 @@ describe('Row', () => {
       expect(row.getCell(1).value).to.equal(1);
       expect(row.getCell(2).value).to.equal(2);
       expect(row.getCell(3).value).to.equal(3);
-      expect(row.getCell(4).value).to.be.null();
-      expect(row.getCell(5).value).to.be.null();
-      expect(row.getCell(6).value).to.be.null();
+      expect(row.getCell(4).value).to.be.null;
+      expect(row.getCell(5).value).to.be.null;
+      expect(row.getCell(6).value).to.be.null;
     });
 
     it('remove almost to end', () => {
@@ -161,8 +162,8 @@ describe('Row', () => {
       expect(row.getCell(2).value).to.equal(2);
       expect(row.getCell(3).value).to.equal(3);
       expect(row.getCell(4).value).to.equal(6);
-      expect(row.getCell(5).value).to.be.null();
-      expect(row.getCell(6).value).to.be.null();
+      expect(row.getCell(5).value).to.be.null;
+      expect(row.getCell(6).value).to.be.null;
     });
 
     it('remove past end', () => {
@@ -180,11 +181,11 @@ describe('Row', () => {
       expect(row.getCell(1).value).to.equal(1);
       expect(row.getCell(2).value).to.equal(2);
       expect(row.getCell(3).value).to.equal(3);
-      expect(row.getCell(4).value).to.be.null();
-      expect(row.getCell(5).value).to.be.null();
-      expect(row.getCell(6).value).to.be.null();
-      expect(row.getCell(7).value).to.be.null();
-      expect(row.getCell(8).value).to.be.null();
+      expect(row.getCell(4).value).to.be.null;
+      expect(row.getCell(5).value).to.be.null;
+      expect(row.getCell(6).value).to.be.null;
+      expect(row.getCell(7).value).to.be.null;
+      expect(row.getCell(8).value).to.be.null;
     });
 
     it('remove and insert fewer', () => {
@@ -274,7 +275,7 @@ describe('Row', () => {
     });
 
     const row2 = sheet.getRow(2);
-    expect(row2.model).to.be.null();
+    expect(row2.model).to.be.null;
 
     const row3 = sheet.getRow(3);
     row3.getCell(1).value = 5;
@@ -344,5 +345,132 @@ describe('Row', () => {
 
     expect(row1.cellCount).to.equal(5);
     expect(row1.actualCellCount).to.equal(4);
+  });
+
+  describe('model', () => {
+    it('rejects a model for another row number', () => {
+      const row = createSheetMock().getRow(1);
+      expect(() => {
+        row.model = { number: 9, cells: [] };
+      }).to.throw('Invalid row number in model');
+    });
+
+    it('places cells without an address in the columns after the previous cell', () => {
+      const row = createSheetMock().getRow(1);
+      row.model = {
+        number: 1,
+        cells: [
+          { address: 'B1', type: Enums.ValueType.Number, value: 1 },
+          { type: Enums.ValueType.Number, value: 2 },
+          { type: Enums.ValueType.Number, value: 3 },
+        ],
+      };
+      expect(row.getCell(2).value).to.equal(1);
+      expect(row.getCell(3).value).to.equal(2);
+      expect(row.getCell(4).value).to.equal(3);
+      expect(row.getCell(1).type).to.equal(Enums.ValueType.Null);
+    });
+
+    it('skips merged cells and replaces any previous content', () => {
+      const row = createSheetMock().getRow(1);
+      row.getCell(5).value = 'old';
+      row.model = {
+        number: 1,
+        cells: [
+          { address: 'A1', type: Enums.ValueType.Number, value: 1 },
+          { address: 'B1', type: Enums.ValueType.Merge, master: 'A1' },
+        ],
+        height: 20,
+      };
+      expect(row.getCell(1).value).to.equal(1);
+      expect(row.getCell(2).type).to.equal(Enums.ValueType.Null);
+      expect(row.getCell(5).type).to.equal(Enums.ValueType.Null);
+      expect(row.height).to.equal(20);
+    });
+
+    it('round trips cells, height, hidden and outline level', () => {
+      const source = createSheetMock().getRow(2);
+      source.getCell(1).value = 'a';
+      source.getCell(3).value = 'c';
+      source.height = 30;
+      source.hidden = true;
+      source.outlineLevel = 2;
+
+      const target = createSheetMock().getRow(2);
+      target.model = JSON.parse(JSON.stringify(source.model));
+
+      expect(target.getCell(1).value).to.equal('a');
+      expect(target.getCell(2).type).to.equal(Enums.ValueType.Null);
+      expect(target.getCell(3).value).to.equal('c');
+      expect(target.height).to.equal(30);
+      expect(target.hidden).to.equal(true);
+      expect(target.outlineLevel).to.equal(2);
+    });
+
+    it('has no model when it has neither cells nor height', () => {
+      expect(createSheetMock().getRow(1).model).to.equal(null);
+    });
+  });
+
+  describe('styles', () => {
+    it('applies font, alignment, border, fill and protection to existing cells and the row style', () => {
+      const row = createSheetMock().getRow(1);
+      const cell = row.getCell(1);
+      cell.value = 'x';
+
+      row.font = { bold: true };
+      row.alignment = { horizontal: 'center' };
+      row.border = { top: { style: 'thin' } };
+      row.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFF0000' } };
+      row.protection = { locked: false };
+
+      expect(row.font).to.deep.equal({ bold: true });
+      expect(row.alignment).to.deep.equal({ horizontal: 'center' });
+      expect(row.border).to.deep.equal({ top: { style: 'thin' } });
+      expect(row.fill.fgColor).to.deep.equal({ argb: 'FFFF0000' });
+      expect(row.protection).to.deep.equal({ locked: false });
+      expect(cell.font).to.deep.equal({ bold: true });
+      expect(cell.alignment).to.deep.equal({ horizontal: 'center' });
+      expect(cell.border).to.deep.equal({ top: { style: 'thin' } });
+      expect(cell.protection).to.deep.equal({ locked: false });
+    });
+  });
+
+  describe('page breaks', () => {
+    function rowOfNewSheet(number) {
+      return new Excel.Workbook().addWorksheet('blort').getRow(number);
+    }
+
+    it('records a break with zero-based column bounds', () => {
+      const row = rowOfNewSheet(1);
+      row.addPageBreak(2, 5);
+      expect(row.worksheet.rowBreaks).to.deep.equal([{ id: 1, max: 4, man: 1, min: 1 }]);
+    });
+
+    it('records a break after the row number across all columns by default', () => {
+      const row = rowOfNewSheet(3);
+      row.addPageBreak();
+      const [pageBreak] = row.worksheet.rowBreaks;
+      expect(pageBreak).to.include({ id: 3, man: 1 });
+      expect(pageBreak).not.to.have.property('min');
+      expect(pageBreak.max).to.be.above(16000);
+    });
+
+    it('omits min when the first column is column 1', () => {
+      const row = rowOfNewSheet(2);
+      row.addPageBreak(1, 3);
+      expect(row.worksheet.rowBreaks).to.deep.equal([{ id: 2, max: 2, man: 1 }]);
+    });
+  });
+
+  describe('destroy', () => {
+    it('releases the worksheet, cells and style', () => {
+      const row = createSheetMock().getRow(1);
+      row.getCell(1).value = 1;
+      row.destroy();
+      expect(row._worksheet).to.equal(undefined);
+      expect(row._cells).to.equal(undefined);
+      expect(row.style).to.equal(undefined);
+    });
   });
 });

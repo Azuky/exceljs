@@ -11,7 +11,7 @@ const expectations = [
     preparedModel: 'B2:C4',
     xml: '<mergeCell ref="B2:C4"/>',
     parsedModel: 'B2:C4',
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
 ];
 

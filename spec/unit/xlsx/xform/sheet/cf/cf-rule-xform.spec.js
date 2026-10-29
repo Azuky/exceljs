@@ -1,4 +1,20 @@
 const testXformHelper = require('../../test-xform-helper');
+const XmlStream = verquire('utils/xml-stream');
+const { knownBug } = require('../../../../../utils/known-bug');
+
+const { findAll } = require('../../../../../utils/xml-tree');
+
+// known bug: operator="containsText" and text="foo" (as Excel writes them) are not written;
+// undo only those two attributes
+const containsTextDeviation = {
+  reason: /attributes \[dxfId,priority,type\] !== \[dxfId,operator,priority,text,type\]/,
+  neutralise(root) {
+    findAll(root, 'cfRule').forEach((rule) => {
+      rule.attrs.operator = 'containsText';
+      rule.attrs.text = 'foo';
+    });
+  },
+};
 
 const CfRuleXform = verquire('xlsx/xform/sheet/cf/cf-rule-xform');
 
@@ -190,8 +206,297 @@ const expectations = [
     },
     tests: ['render', 'parse'],
   },
+
+  {
+    title: 'Data Bar',
+    create() {
+      return new CfRuleXform();
+    },
+    preparedModel: {
+      type: 'dataBar',
+      priority: 1,
+      cfvo: [{ type: 'min' }, { type: 'max' }],
+      color: { argb: 'FF638EC6' },
+      x14Id: '{F7189283-14F7-4DE0-9601-54DE9DB40001}',
+    },
+    xml: `
+      <cfRule type="dataBar" priority="1">
+        <dataBar>
+          <cfvo type="min"/>
+          <cfvo type="max"/>
+          <color rgb="FF638EC6"/>
+        </dataBar>
+        <extLst>
+          <ext uri="{B025F937-C7B1-47D3-B67F-A62EFF666E3E}" xmlns:x14="http://schemas.microsoft.com/office/spreadsheetml/2009/9/main">
+            <x14:id>{F7189283-14F7-4DE0-9601-54DE9DB40001}</x14:id>
+          </ext>
+        </extLst>
+      </cfRule>
+    `,
+    get parsedModel() {
+      return this.preparedModel;
+    },
+    tests: ['render', 'renderIn', 'parse'],
+  },
+  {
+    title: 'Data Bar with numeric cfvo',
+    create() {
+      return new CfRuleXform();
+    },
+    preparedModel: {
+      type: 'dataBar',
+      priority: 2,
+      cfvo: [
+        { type: 'num', value: 5 },
+        { type: 'percentile', value: 90.5 },
+      ],
+      color: { argb: 'FFFF555A' },
+      x14Id: '{00000000-0000-0000-0000-000000000002}',
+    },
+    xml: `
+      <cfRule type="dataBar" priority="2">
+        <dataBar>
+          <cfvo type="num" val="5"/>
+          <cfvo type="percentile" val="90.5"/>
+          <color rgb="FFFF555A"/>
+        </dataBar>
+        <extLst>
+          <ext uri="{B025F937-C7B1-47D3-B67F-A62EFF666E3E}" xmlns:x14="http://schemas.microsoft.com/office/spreadsheetml/2009/9/main">
+            <x14:id>{00000000-0000-0000-0000-000000000002}</x14:id>
+          </ext>
+        </extLst>
+      </cfRule>
+    `,
+    get parsedModel() {
+      return this.preparedModel;
+    },
+    tests: ['render', 'parse'],
+  },
+  {
+    title: 'Contains Text - formula synthesised from ref and text',
+    create() {
+      return new CfRuleXform();
+    },
+    preparedModel: {
+      type: 'containsText',
+      operator: 'containsText',
+      text: 'foo',
+      ref: 'B2:D5',
+      dxfId: 1,
+      priority: 1,
+    },
+    xml: `
+      <cfRule type="containsText" dxfId="1" priority="1" operator="containsText" text="foo">
+        <formula>NOT(ISERROR(SEARCH("foo",B2)))</formula>
+      </cfRule>
+    `,
+    parsedModel: {
+      type: 'containsText',
+      operator: 'containsText',
+      dxfId: 1,
+      priority: 1,
+      formulae: ['NOT(ISERROR(SEARCH("foo",B2)))'],
+    },
+    knownDeviations: { render: containsTextDeviation },
+    tests: ['render', 'renderIn', 'parse'],
+  },
+  {
+    title: 'Contains Text - explicit formula is used verbatim',
+    create() {
+      return new CfRuleXform();
+    },
+    preparedModel: {
+      type: 'containsText',
+      operator: 'containsText',
+      text: 'foo',
+      ref: 'B2:D5',
+      formulae: ['ISNUMBER(SEARCH("bar",B2))'],
+      dxfId: 1,
+      priority: 1,
+    },
+    xml: `
+      <cfRule type="containsText" dxfId="1" priority="1" operator="containsText" text="foo">
+        <formula>ISNUMBER(SEARCH("bar",B2))</formula>
+      </cfRule>
+    `,
+    parsedModel: {
+      type: 'containsText',
+      operator: 'containsText',
+      dxfId: 1,
+      priority: 1,
+      formulae: ['ISNUMBER(SEARCH("bar",B2))'],
+    },
+    knownDeviations: { render: containsTextDeviation },
+    tests: ['render', 'parse'],
+  },
+  ...[
+    ['containsBlanks', 'LEN(TRIM(B2))=0'],
+    ['notContainsBlanks', 'LEN(TRIM(B2))>0'],
+    ['containsErrors', 'ISERROR(B2)'],
+    ['notContainsErrors', 'NOT(ISERROR(B2))'],
+  ].map(([operator, formula]) => ({
+    title: `${operator} - formula synthesised from ref`,
+    create() {
+      return new CfRuleXform();
+    },
+    preparedModel: {
+      type: 'containsText',
+      operator,
+      ref: 'B2:D5',
+      dxfId: 1,
+      priority: 1,
+    },
+    // Excel writes these cfRule types without an `operator` attribute
+    // (ST_ConditionalFormattingOperator has no containsBlanks/containsErrors member)
+    xml: `
+      <cfRule type="${operator}" dxfId="1" priority="1">
+        <formula>${formula}</formula>
+      </cfRule>
+    `,
+    parsedModel: {
+      type: 'containsText',
+      operator,
+      dxfId: 1,
+      priority: 1,
+      formulae: [formula],
+    },
+    // known bug: render writes operator="<type>", which is not a valid operator value
+    knownDeviations: {
+      render: {
+        reason: /attributes \[dxfId,operator,priority,type\] !== \[dxfId,priority,type\]/,
+        // undo only the invalid operator attribute
+        neutralise(root) {
+          findAll(root, 'cfRule').forEach((rule) => {
+            delete rule.attrs.operator;
+          });
+        },
+      },
+    },
+    tests: ['render', 'renderIn', 'parse'],
+  })),
+  ...[
+    ['today', 'FLOOR(B2,1)=TODAY()'],
+    ['yesterday', 'FLOOR(B2,1)=TODAY()-1'],
+    ['tomorrow', 'FLOOR(B2,1)=TODAY()+1'],
+    ['last7Days', 'AND(TODAY()-FLOOR(B2,1)<=6,FLOOR(B2,1)<=TODAY())'],
+    ['thisWeek', 'AND(TODAY()-ROUNDDOWN(B2,0)<=WEEKDAY(TODAY())-1,ROUNDDOWN(B2,0)-TODAY()<=7-WEEKDAY(TODAY()))'],
+    ['lastWeek', 'AND(TODAY()-ROUNDDOWN(B2,0)>=(WEEKDAY(TODAY())),TODAY()-ROUNDDOWN(B2,0)<(WEEKDAY(TODAY())+7))'],
+    ['nextWeek', 'AND(ROUNDDOWN(B2,0)-TODAY()>(7-WEEKDAY(TODAY())),ROUNDDOWN(B2,0)-TODAY()<(15-WEEKDAY(TODAY())))'],
+    ['thisMonth', 'AND(MONTH(B2)=MONTH(TODAY()),YEAR(B2)=YEAR(TODAY()))'],
+    ['lastMonth', 'AND(MONTH(B2)=MONTH(EDATE(TODAY(),0-1)),YEAR(B2)=YEAR(EDATE(TODAY(),0-1)))'],
+    ['nextMonth', 'AND(MONTH(B2)=MONTH(EDATE(TODAY(),0+1)),YEAR(B2)=YEAR(EDATE(TODAY(),0+1)))'],
+  ].map(([timePeriod, formula]) => ({
+    title: `Time Period ${timePeriod} - formula synthesised from ref`,
+    create() {
+      return new CfRuleXform();
+    },
+    preparedModel: {
+      type: 'timePeriod',
+      timePeriod,
+      ref: 'B2:D5',
+      dxfId: 1,
+      priority: 1,
+    },
+    xml: `
+      <cfRule type="timePeriod" dxfId="1" priority="1" timePeriod="${timePeriod}">
+        <formula>${formula.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</formula>
+      </cfRule>
+    `,
+    parsedModel: {
+      type: 'timePeriod',
+      timePeriod,
+      dxfId: 1,
+      priority: 1,
+      formulae: [formula],
+    },
+    tests: ['render', 'parse'],
+  })),
+  {
+    title: 'Time Period - explicit formula is used verbatim',
+    create() {
+      return new CfRuleXform();
+    },
+    preparedModel: {
+      type: 'timePeriod',
+      timePeriod: 'today',
+      ref: 'B2:D5',
+      formulae: ['FLOOR(C3,1)=TODAY()'],
+      dxfId: 1,
+      priority: 1,
+    },
+    xml: `
+      <cfRule type="timePeriod" dxfId="1" priority="1" timePeriod="today">
+        <formula>FLOOR(C3,1)=TODAY()</formula>
+      </cfRule>
+    `,
+    parsedModel: {
+      type: 'timePeriod',
+      timePeriod: 'today',
+      dxfId: 1,
+      priority: 1,
+      formulae: ['FLOOR(C3,1)=TODAY()'],
+    },
+    tests: ['render', 'parse'],
+  },
+  {
+    title: 'Time Period - unknown period has no formula',
+    create() {
+      return new CfRuleXform();
+    },
+    preparedModel: {
+      type: 'timePeriod',
+      timePeriod: 'someday',
+      ref: 'B2:D5',
+      dxfId: 1,
+      priority: 1,
+    },
+    xml: '<cfRule type="timePeriod" dxfId="1" priority="1" timePeriod="someday"/>',
+    parsedModel: {
+      type: 'timePeriod',
+      timePeriod: 'someday',
+      dxfId: 1,
+      priority: 1,
+    },
+    tests: ['render', 'parse'],
+  },
 ];
 
 describe('CfRuleXform', () => {
   testXformHelper(expectations);
+
+  describe('synthesised formulas of the blanks and errors rules', () => {
+    // the rendered attributes of these rules are a known bug (see above), the formula is not
+    const formulaOf = (operator) => {
+      const xmlStream = new XmlStream();
+      new CfRuleXform().render(xmlStream, { type: 'containsText', operator, ref: 'B2:D5', dxfId: 1, priority: 1 });
+      return xmlStream.xml.match(/<formula>(.*)<\/formula>/)[1];
+    };
+
+    it('containsBlanks tests the top-left cell for an empty string', () => {
+      expect(formulaOf('containsBlanks')).to.equal('LEN(TRIM(B2))=0');
+    });
+    it('notContainsBlanks tests the top-left cell for a non-empty string', () => {
+      expect(formulaOf('notContainsBlanks')).to.equal('LEN(TRIM(B2))&gt;0');
+    });
+    it('containsErrors tests the top-left cell for an error', () => {
+      expect(formulaOf('containsErrors')).to.equal('ISERROR(B2)');
+    });
+    it('notContainsErrors tests the top-left cell for no error', () => {
+      expect(formulaOf('notContainsErrors')).to.equal('NOT(ISERROR(B2))');
+    });
+  });
+
+  // known bug: the `text` attribute of a containsText rule is not read, so the text is lost on a round trip
+  knownBug(
+    'parses the text attribute of a containsText rule',
+    async () => {
+      const model = await testXformHelper.parseXml(
+        new CfRuleXform(),
+        '<cfRule type="containsText" dxfId="1" priority="1" operator="containsText" text="foo">' +
+          '<formula>NOT(ISERROR(SEARCH("foo",B2)))</formula></cfRule>',
+      );
+      expect(model.text).to.equal('foo');
+    },
+    /expected undefined to equal 'foo'/,
+  );
 });

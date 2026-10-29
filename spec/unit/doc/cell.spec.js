@@ -1,6 +1,9 @@
+const { knownBug } = require('../../utils/known-bug');
+
 const colCache = verquire('utils/col-cache');
 const Cell = verquire('doc/cell');
 const Enums = verquire('doc/enums');
+const Excel = verquire('exceljs');
 
 const sheetMock = {
   reset() {
@@ -130,7 +133,7 @@ describe('Cell', () => {
     expect(a1.value).to.deep.equal(hyperlinkValue);
     expect(a1.type).to.equal(Enums.ValueType.Hyperlink);
 
-    expect((a1.value = null)).to.be.null();
+    expect((a1.value = null)).to.be.null;
     expect(a1.type).to.equal(Enums.ValueType.Null);
 
     expect((a1.value = { json: 'data' })).to.deep.equal({ json: 'data' });
@@ -174,9 +177,9 @@ describe('Cell', () => {
     expect(a2.value).to.equal(5);
     expect(a2.type).to.equal(Enums.ValueType.Merge);
     expect(a1._mergeCount).to.equal(1);
-    expect(a1.isMerged).to.be.ok();
-    expect(a2.isMerged).to.be.ok();
-    expect(a2.isMergedTo(a1)).to.be.ok();
+    expect(a1.isMerged).to.be.ok;
+    expect(a2.isMerged).to.be.ok;
+    expect(a2.isMergedTo(a1)).to.be.ok;
     expect(a2.master).to.equal(a1);
     expect(a1.master).to.equal(a1);
 
@@ -193,9 +196,9 @@ describe('Cell', () => {
     a2.unmerge();
     expect(a2.type).to.equal(Enums.ValueType.Null);
     expect(a1._mergeCount).to.equal(0);
-    expect(a1.isMerged).to.not.be.ok();
-    expect(a2.isMerged).to.not.be.ok();
-    expect(a2.isMergedTo(a1)).to.not.be.ok();
+    expect(a1.isMerged).to.not.be.ok;
+    expect(a2.isMerged).to.not.be.ok;
+    expect(a2.isMergedTo(a1)).to.not.be.ok;
     expect(a2.master).to.equal(a2);
     expect(a1.master).to.equal(a1);
   });
@@ -398,5 +401,144 @@ describe('Cell', () => {
     expect(a1.model.comment.note.margins.insetmode).to.equal('auto');
     expect(a1.model.comment.note.margins.inset).to.deep.equal([0.13, 0.13, 0.25, 0.25]);
     expect(a1.model.comment.note.editAs).to.equal('absolute');
+  });
+
+  describe('effective type of a formula', () => {
+    function formulaCell(result) {
+      const a1 = sheetMock.getCell('A1');
+      a1.value = { formula: '1+1', result };
+      return a1;
+    }
+
+    it('follows the type of a numeric, string or date result', () => {
+      expect(formulaCell(2).effectiveType).to.equal(Enums.ValueType.Number);
+      expect(formulaCell('s').effectiveType).to.equal(Enums.ValueType.String);
+      expect(formulaCell(new Date('2020-01-02T03:04:05Z')).effectiveType).to.equal(Enums.ValueType.Date);
+    });
+
+    it('is a hyperlink for a hyperlink result', () => {
+      const cell = formulaCell({ text: 'link', hyperlink: 'http://example.com' });
+      expect(cell.type).to.equal(Enums.ValueType.Formula);
+      expect(cell.effectiveType).to.equal(Enums.ValueType.Hyperlink);
+    });
+
+    it('is Null when there is no result', () => {
+      expect(formulaCell(undefined).effectiveType).to.equal(Enums.ValueType.Null);
+      expect(formulaCell(null).effectiveType).to.equal(Enums.ValueType.Null);
+    });
+
+    // known bug: FormulaValue.effectiveType has no branch for boolean results and reports Null — see spec/KNOWN-BUGS.md
+    knownBug(
+      'is Boolean for a boolean result',
+      () => {
+        expect(formulaCell(true).effectiveType).to.equal(Enums.ValueType.Boolean);
+      },
+      /expected \+0 to equal 9/,
+    );
+
+    // known bug: FormulaValue.effectiveType has no branch for error results and reports Null — see spec/KNOWN-BUGS.md
+    knownBug(
+      'is Error for an error result',
+      () => {
+        expect(formulaCell({ error: '#N/A' }).effectiveType).to.equal(Enums.ValueType.Error);
+      },
+      /expected \+0 to equal 10/,
+    );
+
+    it('exposes the formula, result and formula type', () => {
+      const cell = formulaCell(2);
+      expect(cell.formula).to.equal('1+1');
+      expect(cell.result).to.equal(2);
+      expect(cell.formulaType).to.equal(Enums.FormulaType.Master);
+    });
+  });
+
+  describe('text and csv representations', () => {
+    function cellWith(value) {
+      const a1 = sheetMock.getCell('A1');
+      a1.value = value;
+      return a1;
+    }
+
+    it('toString renders the text of each value type', () => {
+      expect(cellWith(null).toString()).to.equal('');
+      expect(cellWith(5).toString()).to.equal('5');
+      expect(cellWith('plain').toString()).to.equal('plain');
+      expect(cellWith(true).toString()).to.equal('true');
+      expect(cellWith({ error: '#N/A' }).toString()).to.equal('#N/A');
+      expect(cellWith({ text: 'link', hyperlink: 'http://example.com' }).toString()).to.equal('link');
+      expect(cellWith({ richText: [{ text: 'Hel' }, { text: 'lo' }] }).toString()).to.equal('Hello');
+      expect(cellWith({ formula: '1+1', result: 2 }).toString()).to.equal('2');
+    });
+
+    it('toCsvString renders each value type as a csv field', () => {
+      expect(cellWith(null).toCsvString()).to.equal('');
+      expect(String(cellWith(5).toCsvString())).to.equal('5');
+      expect(cellWith('say "hi"').toCsvString()).to.equal('"say ""hi"""');
+      expect(String(cellWith(true).toCsvString())).to.equal('1');
+      expect(cellWith({ error: '#N/A' }).toCsvString()).to.equal('#N/A');
+      expect(cellWith({ text: 'link', hyperlink: 'http://example.com' }).toCsvString()).to.equal('http://example.com');
+      expect(String(cellWith({ formula: '1+1', result: 3 }).toCsvString())).to.equal('3');
+    });
+
+    // known bug: RichTextValue.toCsvString reads this.text, which the value class does not have, and throws — see spec/KNOWN-BUGS.md
+    knownBug(
+      'toCsvString renders a rich text cell as its quoted plain text',
+      () => {
+        expect(cellWith({ richText: [{ text: 'Hel' }, { text: 'lo' }] }).toCsvString()).to.equal('"Hello"');
+      },
+      /reading 'replace'/,
+    );
+
+    it('isHyperlink is true only for hyperlink cells', () => {
+      expect(cellWith({ text: 'link', hyperlink: 'http://example.com' }).isHyperlink).to.equal(true);
+      expect(cellWith('http://example.com').isHyperlink).to.equal(false);
+      expect(cellWith(5).isHyperlink).to.equal(false);
+    });
+  });
+
+  describe('protection, names and destroy', () => {
+    it('protection reads and writes the style', () => {
+      const a1 = sheetMock.getCell('A1');
+      expect(a1.protection).to.equal(undefined);
+      a1.protection = { locked: false, hidden: true };
+      expect(a1.protection).to.deep.equal({ locked: false, hidden: true });
+      expect(a1.style.protection).to.deep.equal({ locked: false, hidden: true });
+    });
+
+    it('removeAllNames clears every name of the cell only', () => {
+      const ws = new Excel.Workbook().addWorksheet('names');
+      const a1 = ws.getCell('A1');
+      const b1 = ws.getCell('B1');
+      a1.names = ['first', 'second'];
+      b1.name = 'first';
+      expect(a1.names).to.have.members(['first', 'second']);
+
+      a1.removeAllNames();
+
+      expect(a1.names).to.deep.equal([]);
+      expect(a1.name).to.equal(undefined);
+      expect(b1.names).to.deep.equal(['first']);
+    });
+
+    it('addName and removeName adjust single names', () => {
+      const ws = new Excel.Workbook().addWorksheet('names');
+      const a1 = ws.getCell('A1');
+      a1.addName('one');
+      a1.addName('two');
+      a1.removeName('one');
+      expect(a1.names).to.deep.equal(['two']);
+    });
+
+    it('destroy releases the references held by the cell', () => {
+      const ws = new Excel.Workbook().addWorksheet('names');
+      const a1 = ws.getCell('A1');
+      a1.value = 5;
+      a1.destroy();
+      expect(a1._value).to.equal(undefined);
+      expect(a1._row).to.equal(undefined);
+      expect(a1._column).to.equal(undefined);
+      expect(a1.style).to.equal(undefined);
+    });
   });
 });

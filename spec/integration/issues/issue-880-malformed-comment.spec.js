@@ -1,24 +1,33 @@
-const fs = require('fs');
-
 const ExcelJS = verquire('exceljs');
 
 // this file to contain integration tests created from github issues
-const TEST_XLSX_FILE_NAME = './spec/out/wb-issue-880.test.xlsx';
 
 describe('github issues', () => {
-  it('issue 880 - malformed comment crashes on write', () => {
+  it('issue 880 - malformed comment crashes on write', async () => {
     const wb = new ExcelJS.Workbook();
-    return wb.xlsx.readFile('./spec/integration/data/test-issue-880.xlsx').then(() => {
-      wb.xlsx
-        .writeBuffer({
-          useStyles: true,
-          useSharedStrings: true,
-        })
-        .then(function (buffer) {
-          const wstream = fs.createWriteStream(TEST_XLSX_FILE_NAME);
-          wstream.write(buffer);
-          wstream.end();
-        });
+    await wb.xlsx.readFile('./spec/integration/data/test-issue-880.xlsx');
+    const buffer = await wb.xlsx.writeBuffer({
+      useStyles: true,
+      useSharedStrings: true,
     });
-  }).timeout(6000);
+
+    const wb2 = new ExcelJS.Workbook();
+    await wb2.xlsx.load(buffer);
+    expect(wb2.worksheets.length).to.equal(wb.worksheets.length);
+    let notesSeen = 0;
+    wb.eachSheet((ws) => {
+      const ws2 = wb2.getWorksheet(ws.name);
+      expect(ws2, ws.name).to.be.ok;
+      ws.eachRow((row) => {
+        row.eachCell((cell) => {
+          if (cell.note) {
+            notesSeen++;
+            const joined = (note) => note.texts.map((t) => t.text).join('');
+            expect(joined(ws2.getCell(cell.address).note), cell.address).to.equal(joined(cell.note));
+          }
+        });
+      });
+    });
+    expect(notesSeen).to.be.greaterThan(0);
+  }, 6000);
 });

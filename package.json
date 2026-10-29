@@ -57,9 +57,9 @@
   },
   "scripts": {
     "test": "pnpm run build && pnpm run test:unit && pnpm run test:integration && pnpm run test:end-to-end && pnpm run test:smoke",
-    "test:unit": "mocha --require spec/config/setup --require spec/config/setup-unit spec/unit --recursive",
-    "test:integration": "mocha --require spec/config/setup spec/integration --recursive",
-    "test:end-to-end": "mocha --require spec/config/setup spec/end-to-end --recursive",
+    "test:unit": "vitest run --project unit",
+    "test:integration": "vitest run --project integration",
+    "test:end-to-end": "vitest run --project end-to-end",
     "test:smoke": "node scripts/smoke-test.mjs",
     "test:manual": "node spec/manual/app.js",
     "lint": "oxlint",
@@ -86,23 +86,18 @@
     "uuid": "^8.3.0"
   },
   "devDependencies": {
-    "@types/chai": "^4.2.12",
-    "@types/mocha": "^8.0.3",
     "@types/node": "^22.0.0",
-    "chai": "^4.2.0",
     "chai-datetime": "^1.7.0",
-    "chai-xml": "^0.3.2",
-    "dirty-chai": "^2.0.1",
     "express": "^4.16.4",
     "got": "^9.0.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
-    "mocha": "^7.2.0",
     "oxfmt": "^0.75.0",
     "oxlint": "^1.90.0",
     "sax": "^1.2.4",
     "tsdown": "^0.23.2",
-    "typescript": "~7.0.2"
+    "typescript": "~7.0.2",
+    "vitest": "5.0.5"
   },
   "lint-staged": {
     "*.{js,mjs,cjs,ts,mts,cts}": [

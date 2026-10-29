@@ -25,7 +25,7 @@ const expectations = [
       header: 0.3,
       footer: 0.3,
     },
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
 ];
 

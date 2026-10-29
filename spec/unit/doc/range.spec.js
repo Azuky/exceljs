@@ -1,3 +1,5 @@
+const { knownBug } = require('../../utils/known-bug');
+
 const Range = verquire('doc/range');
 
 describe('Range', () => {
@@ -87,113 +89,171 @@ describe('Range', () => {
     const C3F6 = new Range('C3:F6');
 
     // touching at corners
-    expect(C3F6.intersects(new Range('A1:B2'))).to.be.false();
-    expect(C3F6.intersects(new Range('G1:H2'))).to.be.false();
-    expect(C3F6.intersects(new Range('A7:B8'))).to.be.false();
-    expect(C3F6.intersects(new Range('G7:H8'))).to.be.false();
+    expect(C3F6.intersects(new Range('A1:B2'))).to.be.false;
+    expect(C3F6.intersects(new Range('G1:H2'))).to.be.false;
+    expect(C3F6.intersects(new Range('A7:B8'))).to.be.false;
+    expect(C3F6.intersects(new Range('G7:H8'))).to.be.false;
 
     // Adjacent to edges
-    expect(C3F6.intersects(new Range('A1:H2'))).to.be.false();
-    expect(C3F6.intersects(new Range('A1:B8'))).to.be.false();
-    expect(C3F6.intersects(new Range('G1:H8'))).to.be.false();
-    expect(C3F6.intersects(new Range('A7:H8'))).to.be.false();
+    expect(C3F6.intersects(new Range('A1:H2'))).to.be.false;
+    expect(C3F6.intersects(new Range('A1:B8'))).to.be.false;
+    expect(C3F6.intersects(new Range('G1:H8'))).to.be.false;
+    expect(C3F6.intersects(new Range('A7:H8'))).to.be.false;
 
     // 1 cell margin
-    expect(C3F6.intersects(new Range('A1:H1'))).to.be.false();
-    expect(C3F6.intersects(new Range('A1:A8'))).to.be.false();
-    expect(C3F6.intersects(new Range('G1:G8'))).to.be.false();
-    expect(C3F6.intersects(new Range('A8:G8'))).to.be.false();
+    expect(C3F6.intersects(new Range('A1:H1'))).to.be.false;
+    expect(C3F6.intersects(new Range('A1:A8'))).to.be.false;
+    expect(C3F6.intersects(new Range('G1:G8'))).to.be.false;
+    expect(C3F6.intersects(new Range('A8:G8'))).to.be.false;
 
     // Adjacent at corners
-    expect(C3F6.intersects(new Range('A1:B3'))).to.be.false();
-    expect(C3F6.intersects(new Range('A1:C2'))).to.be.false();
-    expect(C3F6.intersects(new Range('F1:H2'))).to.be.false();
-    expect(C3F6.intersects(new Range('G1:H3'))).to.be.false();
-    expect(C3F6.intersects(new Range('A6:B8'))).to.be.false();
-    expect(C3F6.intersects(new Range('A7:C8'))).to.be.false();
-    expect(C3F6.intersects(new Range('F7:H8'))).to.be.false();
-    expect(C3F6.intersects(new Range('G6:H8'))).to.be.false();
+    expect(C3F6.intersects(new Range('A1:B3'))).to.be.false;
+    expect(C3F6.intersects(new Range('A1:C2'))).to.be.false;
+    expect(C3F6.intersects(new Range('F1:H2'))).to.be.false;
+    expect(C3F6.intersects(new Range('G1:H3'))).to.be.false;
+    expect(C3F6.intersects(new Range('A6:B8'))).to.be.false;
+    expect(C3F6.intersects(new Range('A7:C8'))).to.be.false;
+    expect(C3F6.intersects(new Range('F7:H8'))).to.be.false;
+    expect(C3F6.intersects(new Range('G6:H8'))).to.be.false;
 
     // Adjacent at edges
-    expect(C3F6.intersects(new Range('A4:B5'))).to.be.false();
-    expect(C3F6.intersects(new Range('D1:E2'))).to.be.false();
-    expect(C3F6.intersects(new Range('D7:E8'))).to.be.false();
-    expect(C3F6.intersects(new Range('G4:H8'))).to.be.false();
+    expect(C3F6.intersects(new Range('A4:B5'))).to.be.false;
+    expect(C3F6.intersects(new Range('D1:E2'))).to.be.false;
+    expect(C3F6.intersects(new Range('D7:E8'))).to.be.false;
+    expect(C3F6.intersects(new Range('G4:H8'))).to.be.false;
 
     // intersecting at corners
-    expect(C3F6.intersects(new Range('A1:C3'))).to.be.true();
-    expect(C3F6.intersects(new Range('F1:H3'))).to.be.true();
-    expect(C3F6.intersects(new Range('A6:C8'))).to.be.true();
-    expect(C3F6.intersects(new Range('F6:H8'))).to.be.true();
+    expect(C3F6.intersects(new Range('A1:C3'))).to.be.true;
+    expect(C3F6.intersects(new Range('F1:H3'))).to.be.true;
+    expect(C3F6.intersects(new Range('A6:C8'))).to.be.true;
+    expect(C3F6.intersects(new Range('F6:H8'))).to.be.true;
 
     // slice through middle
-    expect(C3F6.intersects(new Range('A4:H5'))).to.be.true();
-    expect(C3F6.intersects(new Range('D1:E8'))).to.be.true();
+    expect(C3F6.intersects(new Range('A4:H5'))).to.be.true;
+    expect(C3F6.intersects(new Range('D1:E8'))).to.be.true;
 
     // inside
-    expect(C3F6.intersects(new Range('D4:E5'))).to.be.true();
+    expect(C3F6.intersects(new Range('D4:E5'))).to.be.true;
 
     // outside
-    expect(C3F6.intersects(new Range('A1:H8'))).to.be.true();
+    expect(C3F6.intersects(new Range('A1:H8'))).to.be.true;
   });
 
   it('detects containment', () => {
     const C3F6 = new Range('C3:F6');
 
-    expect(C3F6.contains('A1')).to.be.false();
-    expect(C3F6.contains('B2')).to.be.false();
-    expect(C3F6.contains('C2')).to.be.false();
-    expect(C3F6.contains('D2')).to.be.false();
-    expect(C3F6.contains('E2')).to.be.false();
-    expect(C3F6.contains('F2')).to.be.false();
-    expect(C3F6.contains('G2')).to.be.false();
-    expect(C3F6.contains('H1')).to.be.false();
-    expect(C3F6.contains('G3')).to.be.false();
-    expect(C3F6.contains('G4')).to.be.false();
-    expect(C3F6.contains('G5')).to.be.false();
-    expect(C3F6.contains('G6')).to.be.false();
-    expect(C3F6.contains('G7')).to.be.false();
-    expect(C3F6.contains('H7')).to.be.false();
-    expect(C3F6.contains('F7')).to.be.false();
-    expect(C3F6.contains('E7')).to.be.false();
-    expect(C3F6.contains('D7')).to.be.false();
-    expect(C3F6.contains('C7')).to.be.false();
-    expect(C3F6.contains('B7')).to.be.false();
-    expect(C3F6.contains('A8')).to.be.false();
-    expect(C3F6.contains('B6')).to.be.false();
-    expect(C3F6.contains('B5')).to.be.false();
-    expect(C3F6.contains('B4')).to.be.false();
-    expect(C3F6.contains('B3')).to.be.false();
+    expect(C3F6.contains('A1')).to.be.false;
+    expect(C3F6.contains('B2')).to.be.false;
+    expect(C3F6.contains('C2')).to.be.false;
+    expect(C3F6.contains('D2')).to.be.false;
+    expect(C3F6.contains('E2')).to.be.false;
+    expect(C3F6.contains('F2')).to.be.false;
+    expect(C3F6.contains('G2')).to.be.false;
+    expect(C3F6.contains('H1')).to.be.false;
+    expect(C3F6.contains('G3')).to.be.false;
+    expect(C3F6.contains('G4')).to.be.false;
+    expect(C3F6.contains('G5')).to.be.false;
+    expect(C3F6.contains('G6')).to.be.false;
+    expect(C3F6.contains('G7')).to.be.false;
+    expect(C3F6.contains('H7')).to.be.false;
+    expect(C3F6.contains('F7')).to.be.false;
+    expect(C3F6.contains('E7')).to.be.false;
+    expect(C3F6.contains('D7')).to.be.false;
+    expect(C3F6.contains('C7')).to.be.false;
+    expect(C3F6.contains('B7')).to.be.false;
+    expect(C3F6.contains('A8')).to.be.false;
+    expect(C3F6.contains('B6')).to.be.false;
+    expect(C3F6.contains('B5')).to.be.false;
+    expect(C3F6.contains('B4')).to.be.false;
+    expect(C3F6.contains('B3')).to.be.false;
 
-    expect(C3F6.contains('C3')).to.be.true();
-    expect(C3F6.contains('D3')).to.be.true();
-    expect(C3F6.contains('E3')).to.be.true();
-    expect(C3F6.contains('F3')).to.be.true();
-    expect(C3F6.contains('F4')).to.be.true();
-    expect(C3F6.contains('F5')).to.be.true();
-    expect(C3F6.contains('F6')).to.be.true();
-    expect(C3F6.contains('E6')).to.be.true();
-    expect(C3F6.contains('D6')).to.be.true();
-    expect(C3F6.contains('C6')).to.be.true();
-    expect(C3F6.contains('C5')).to.be.true();
-    expect(C3F6.contains('C4')).to.be.true();
-    expect(C3F6.contains('D4')).to.be.true();
-    expect(C3F6.contains('E4')).to.be.true();
-    expect(C3F6.contains('E5')).to.be.true();
-    expect(C3F6.contains('D5')).to.be.true();
+    expect(C3F6.contains('C3')).to.be.true;
+    expect(C3F6.contains('D3')).to.be.true;
+    expect(C3F6.contains('E3')).to.be.true;
+    expect(C3F6.contains('F3')).to.be.true;
+    expect(C3F6.contains('F4')).to.be.true;
+    expect(C3F6.contains('F5')).to.be.true;
+    expect(C3F6.contains('F6')).to.be.true;
+    expect(C3F6.contains('E6')).to.be.true;
+    expect(C3F6.contains('D6')).to.be.true;
+    expect(C3F6.contains('C6')).to.be.true;
+    expect(C3F6.contains('C5')).to.be.true;
+    expect(C3F6.contains('C4')).to.be.true;
+    expect(C3F6.contains('D4')).to.be.true;
+    expect(C3F6.contains('E4')).to.be.true;
+    expect(C3F6.contains('E5')).to.be.true;
+    expect(C3F6.contains('D5')).to.be.true;
 
-    expect(C3F6.contains('$A$1')).to.be.false();
-    expect(C3F6.contains('$D$5')).to.be.true();
+    expect(C3F6.contains('$A$1')).to.be.false;
+    expect(C3F6.contains('$D$5')).to.be.true;
 
-    expect(C3F6.contains('other!$A$1')).to.be.false();
-    expect(C3F6.contains('other!$D$5')).to.be.true();
+    expect(C3F6.contains('other!$A$1')).to.be.false;
+    expect(C3F6.contains('other!$D$5')).to.be.true;
 
     const otherC3F6 = new Range('other!C3:F6');
-    expect(otherC3F6.contains('$A$1')).to.be.false();
-    expect(otherC3F6.contains('$D$5')).to.be.true();
-    expect(otherC3F6.contains('other!$A$1')).to.be.false();
-    expect(otherC3F6.contains('other!$D$5')).to.be.true();
-    expect(otherC3F6.contains('blort!$A$1')).to.be.false();
-    expect(otherC3F6.contains('blort!$D$5')).to.be.false();
+    expect(otherC3F6.contains('$A$1')).to.be.false;
+    expect(otherC3F6.contains('$D$5')).to.be.true;
+    expect(otherC3F6.contains('other!$A$1')).to.be.false;
+    expect(otherC3F6.contains('other!$D$5')).to.be.true;
+    expect(otherC3F6.contains('blort!$A$1')).to.be.false;
+    expect(otherC3F6.contains('blort!$D$5')).to.be.false;
+  });
+
+  describe('sheetName', () => {
+    it('does not intersect a range on another sheet', () => {
+      const a = new Range('Sheet1!A1:B2');
+      const b = new Range('Sheet2!A1:B2');
+      expect(a.intersects(b)).to.equal(false);
+      expect(b.intersects(a)).to.equal(false);
+    });
+
+    it('intersects an overlapping range on the same sheet', () => {
+      expect(new Range('Sheet1!A1:B2').intersects(new Range('Sheet1!B2:C3'))).to.equal(true);
+    });
+
+    it('does not intersect a range that only touches on the other axis', () => {
+      expect(new Range('Sheet1!A1:B2').intersects(new Range('Sheet1!C1:D2'))).to.equal(false);
+    });
+
+    it('ignores the sheet when either range has none', () => {
+      expect(new Range('A1:B2').intersects(new Range('Sheet2!B2:C3'))).to.equal(true);
+      expect(new Range('Sheet1!A1:B2').intersects(new Range('B2:C3'))).to.equal(true);
+    });
+
+    // known bug: setTLBR(tl, br, sheetName) re-applies the corners with an undefined sheet name, dropping it — see spec/KNOWN-BUGS.md
+    knownBug(
+      'takes the sheet name from the third argument of [tl, br, sheetName]',
+      () => {
+        const range = new Range('A1', 'B2', 'Sheet1');
+        expect(range.sheetName).to.equal('Sheet1');
+        expect(range.range).to.equal('Sheet1!A1:B2');
+      },
+      /expected undefined to equal 'Sheet1'/,
+    );
+
+    it('takes the sheet name from the fifth argument of [t, l, b, r, sheetName]', () => {
+      const range = new Range(1, 1, 2, 2, 'Sheet1');
+      expect(range.sheetName).to.equal('Sheet1');
+      expect(range.range).to.equal('Sheet1!A1:B2');
+    });
+
+    it('can be built from a model object', () => {
+      const range = new Range({ top: 2, left: 3, bottom: 4, right: 5, sheetName: 'S' });
+      expect(range.range).to.equal('S!C2:E4');
+      expect(range.sheetName).to.equal('S');
+    });
+
+    it('keeps the sheet name when copied', () => {
+      const copy = new Range(new Range('S!A1:B2'));
+      expect(copy.sheetName).to.equal('S');
+      expect(copy.range).to.equal('S!A1:B2');
+    });
+
+    it('lets the sheet name be changed', () => {
+      const range = new Range('S!A1:B2');
+      range.sheetName = 'T';
+      expect(range.sheetName).to.equal('T');
+      expect(range.intersects(new Range('S!A1:B2'))).to.equal(false);
+    });
   });
 });

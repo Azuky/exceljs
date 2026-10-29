@@ -21,4 +21,21 @@ const expectations = [
 
 describe('RelationshipsXform', () => {
   testXformHelper(expectations);
+
+  describe('unexpected nodes', () => {
+    it('rejects an unknown child in parseOpen', async () => {
+      let error;
+      try {
+        await testXformHelper.parseXml(new RelationshipsXform(), '<Relationships><bogus/></Relationships>');
+      } catch (e) {
+        error = e;
+      }
+      expect(error).to.be.an('error');
+      expect(error.message).to.match(/^Unexpected xml node in parseOpen: \{"name":"bogus","attributes":\{\}/);
+    });
+
+    it('throws on an unexpected closing tag', () => {
+      expect(() => new RelationshipsXform().parseClose('bogus')).to.throw('Unexpected xml node in parseClose: bogus');
+    });
+  });
 });
