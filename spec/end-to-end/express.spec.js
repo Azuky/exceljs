@@ -7,7 +7,7 @@ const Excel = verquire('exceljs');
 
 describe('Express', () => {
   let server;
-  before(() => {
+  beforeAll(() => {
     const app = express();
     app.get('/workbook', (req, res) => {
       const wb = testutils.createTestBook(new Excel.Workbook(), 'xlsx');
@@ -20,12 +20,11 @@ describe('Express', () => {
     server = app.listen(3003);
   });
 
-  after(() => {
+  afterAll(() => {
     server.close();
   });
 
-  it('downloads a workbook', async function () {
-    this.timeout(5000);
+  it('downloads a workbook', async () => {
     const res = got.stream('http://127.0.0.1:3003/workbook', {
       decompress: false,
     });
@@ -33,5 +32,5 @@ describe('Express', () => {
     // TODO: Remove passThrough with got 10+ (requires node v10+)
     await wb2.xlsx.read(res.pipe(new PassThrough()));
     testutils.checkTestBook(wb2, 'xlsx');
-  });
+  }, 5000);
 });

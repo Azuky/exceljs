@@ -6,7 +6,7 @@ const ExcelJS = verquire('exceljs');
 describe('Gold Book', () => {
   describe('Read', () => {
     let wb;
-    before(() => {
+    beforeAll(() => {
       wb = new ExcelJS.Workbook();
       return wb.xlsx.readFile(`${__dirname}/data/gold.xlsx`);
     });

@@ -8,12 +8,11 @@ const TEST_FILE_NAME = './spec/out/wb.test.xlsx';
 
 describe('WorkbookReader', () => {
   describe('Serialise', () => {
-    it('xlsx file', function () {
-      this.timeout(10000);
+    it('xlsx file', () => {
       const wb = testutils.createTestBook(new ExcelJS.Workbook(), 'xlsx');
 
       return wb.xlsx.writeFile(TEST_FILE_NAME).then(() => testutils.checkTestBookReader(TEST_FILE_NAME));
-    });
+    }, 10000);
   });
 
   describe('#readFile', () => {
@@ -31,8 +30,7 @@ describe('WorkbookReader', () => {
         );
       });
 
-      it('should fail fast on a huge file', function () {
-        this.timeout(5000);
+      it('should fail fast on a huge file', () => {
         const workbook = new ExcelJS.Workbook();
         return workbook.xlsx.readFile('./spec/integration/data/huge.xlsx', { maxRows: 100 }).then(
           () => {
@@ -42,7 +40,7 @@ describe('WorkbookReader', () => {
             expect(err.message).to.equal('Max row count (100) exceeded');
           },
         );
-      });
+      }, 5000);
 
       it('should parse fine if the limit is not exceeded', () => {
         const workbook = new ExcelJS.Workbook();
@@ -68,8 +66,7 @@ describe('WorkbookReader', () => {
           );
       });
 
-      it('should fail fast on a huge file', function () {
-        this.timeout(5000);
+      it('should fail fast on a huge file', () => {
         const workbook = new ExcelJS.Workbook();
         return workbook.xlsx.readFile('./spec/integration/data/huge.xlsx', { maxCols: 10 }).then(
           () => {
@@ -79,7 +76,7 @@ describe('WorkbookReader', () => {
             expect(err.message).to.equal('Max column count (10) exceeded');
           },
         );
-      });
+      }, 5000);
 
       it('should parse fine if the limit is not exceeded', () => {
         const workbook = new ExcelJS.Workbook();
@@ -115,13 +112,14 @@ describe('WorkbookReader', () => {
   });
 
   describe('edit styles in existing file', () => {
-    beforeEach(function () {
-      this.wb = new ExcelJS.Workbook();
-      return this.wb.xlsx.readFile('./spec/integration/data/test-row-styles.xlsx');
+    let wb;
+    beforeEach(() => {
+      wb = new ExcelJS.Workbook();
+      return wb.xlsx.readFile('./spec/integration/data/test-row-styles.xlsx');
     });
 
-    it('edit styles of single row instead of all', function () {
-      const ws = this.wb.getWorksheet(1);
+    it('edit styles of single row instead of all', () => {
+      const ws = wb.getWorksheet(1);
 
       ws.eachRow((row, rowNo) => {
         if (rowNo % 5 === 0) {
@@ -140,69 +138,69 @@ describe('WorkbookReader', () => {
   });
 
   describe('with a spreadsheet that contains formulas', () => {
-    before(function () {
-      const testContext = this;
+    let worksheet, cell;
+    beforeAll(() => {
       const workbook = new ExcelJS.Workbook();
       return workbook.xlsx.read(fs.createReadStream('./spec/integration/data/formulas.xlsx')).then(() => {
-        testContext.worksheet = workbook.getWorksheet();
+        worksheet = workbook.getWorksheet();
       });
     });
 
     describe('with a cell that contains a regular formula', () => {
-      beforeEach(function () {
-        this.cell = this.worksheet.getCell('A2');
+      beforeEach(() => {
+        cell = worksheet.getCell('A2');
       });
 
-      it('should be classified as a formula cell', function () {
-        expect(this.cell.type).to.equal(ExcelJS.ValueType.Formula);
+      it('should be classified as a formula cell', () => {
+        expect(cell.type).to.equal(ExcelJS.ValueType.Formula);
       });
 
-      it('should have text corresponding to the evaluated formula result', function () {
-        expect(this.cell.text).to.equal('someone@example.com');
+      it('should have text corresponding to the evaluated formula result', () => {
+        expect(cell.text).to.equal('someone@example.com');
       });
 
-      it('should have the formula source', function () {
-        expect(this.cell.model.formula).to.equal('_xlfn.CONCAT("someone","@example.com")');
+      it('should have the formula source', () => {
+        expect(cell.model.formula).to.equal('_xlfn.CONCAT("someone","@example.com")');
       });
     });
 
     describe('with a cell that contains a hyperlinked formula', () => {
-      beforeEach(function () {
-        this.cell = this.worksheet.getCell('A1');
+      beforeEach(() => {
+        cell = worksheet.getCell('A1');
       });
 
-      it('should be classified as a formula cell', function () {
-        expect(this.cell.type).to.equal(ExcelJS.ValueType.Hyperlink);
+      it('should be classified as a formula cell', () => {
+        expect(cell.type).to.equal(ExcelJS.ValueType.Hyperlink);
       });
 
-      it('should have text corresponding to the evaluated formula result', function () {
-        expect(this.cell.value.text).to.equal('someone@example.com');
+      it('should have text corresponding to the evaluated formula result', () => {
+        expect(cell.value.text).to.equal('someone@example.com');
       });
 
-      it('should have the formula source', function () {
-        expect(this.cell.model.formula).to.equal('_xlfn.CONCAT("someone","@example.com")');
+      it('should have the formula source', () => {
+        expect(cell.model.formula).to.equal('_xlfn.CONCAT("someone","@example.com")');
       });
 
-      it('should contain the linked url', function () {
-        expect(this.cell.value.hyperlink).to.equal('mailto:someone@example.com');
-        expect(this.cell.hyperlink).to.equal('mailto:someone@example.com');
+      it('should contain the linked url', () => {
+        expect(cell.value.hyperlink).to.equal('mailto:someone@example.com');
+        expect(cell.hyperlink).to.equal('mailto:someone@example.com');
       });
     });
   });
 
   describe('with a spreadsheet that contains a shared string with an escaped underscore', () => {
-    before(function () {
-      const testContext = this;
+    let worksheet;
+    beforeAll(() => {
       const workbook = new ExcelJS.Workbook();
       return workbook.xlsx
         .read(fs.createReadStream('./spec/integration/data/shared_string_with_escape.xlsx'))
         .then(() => {
-          testContext.worksheet = workbook.getWorksheet();
+          worksheet = workbook.getWorksheet();
         });
     });
 
-    it('should decode the underscore', function () {
-      const cell = this.worksheet.getCell('A1');
+    it('should decode the underscore', () => {
+      const cell = worksheet.getCell('A1');
       expect(cell.value).to.equal('_x000D_');
     });
   });
@@ -247,27 +245,27 @@ describe('WorkbookReader', () => {
   });
 
   describe('with a spreadsheet that contains images', () => {
-    before(function () {
-      const testContext = this;
+    let worksheet;
+    beforeAll(() => {
       const workbook = new ExcelJS.Workbook();
       return workbook.xlsx.read(fs.createReadStream('./spec/integration/data/images.xlsx')).then(() => {
-        testContext.worksheet = workbook.getWorksheet();
+        worksheet = workbook.getWorksheet();
       });
     });
 
     describe('with image`s tl anchor', () => {
-      it('Should integer part of col equals nativeCol', function () {
-        this.worksheet.getImages().forEach((image) => {
+      it('Should integer part of col equals nativeCol', () => {
+        worksheet.getImages().forEach((image) => {
           expect(Math.floor(image.range.tl.col)).to.equal(image.range.tl.nativeCol);
         });
       });
-      it('Should integer part of row equals nativeRow', function () {
-        this.worksheet.getImages().forEach((image) => {
+      it('Should integer part of row equals nativeRow', () => {
+        worksheet.getImages().forEach((image) => {
           expect(Math.floor(image.range.tl.row)).to.equal(image.range.tl.nativeRow);
         });
       });
-      it('Should anchor width equals to column width when custom', function () {
-        const ws = this.worksheet;
+      it('Should anchor width equals to column width when custom', () => {
+        const ws = worksheet;
 
         ws.getImages().forEach((image) => {
           const col = ws.getColumn(image.range.tl.nativeCol + 1);
@@ -279,8 +277,8 @@ describe('WorkbookReader', () => {
           }
         });
       });
-      it('Should anchor height equals to row height', function () {
-        const ws = this.worksheet;
+      it('Should anchor height equals to row height', () => {
+        const ws = worksheet;
 
         ws.getImages().forEach((image) => {
           const row = ws.getRow(image.range.tl.nativeRow + 1);
@@ -295,18 +293,18 @@ describe('WorkbookReader', () => {
     });
 
     describe('with image`s br anchor', () => {
-      it('Should integer part of col equals nativeCol', function () {
-        this.worksheet.getImages().forEach((image) => {
+      it('Should integer part of col equals nativeCol', () => {
+        worksheet.getImages().forEach((image) => {
           expect(Math.floor(image.range.br.col)).to.equal(image.range.br.nativeCol);
         });
       });
-      it('Should integer part of row equals nativeRow', function () {
-        this.worksheet.getImages().forEach((image) => {
+      it('Should integer part of row equals nativeRow', () => {
+        worksheet.getImages().forEach((image) => {
           expect(Math.floor(image.range.br.row)).to.equal(image.range.br.nativeRow);
         });
       });
-      it('Should anchor width equals to column width when custom', function () {
-        const ws = this.worksheet;
+      it('Should anchor width equals to column width when custom', () => {
+        const ws = worksheet;
 
         ws.getImages().forEach((image) => {
           const col = ws.getColumn(image.range.br.nativeCol + 1);
@@ -318,8 +316,8 @@ describe('WorkbookReader', () => {
           }
         });
       });
-      it('Should anchor height equals to row height', function () {
-        const ws = this.worksheet;
+      it('Should anchor height equals to row height', () => {
+        const ws = worksheet;
 
         ws.getImages().forEach((image) => {
           const row = ws.getRow(image.range.br.nativeRow + 1);

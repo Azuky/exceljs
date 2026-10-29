@@ -37,9 +37,7 @@ const reorderZip = async (buffer) => {
 
 describe('WorkbookReader', () => {
   describe('zip entry order', () => {
-    it('reads a worksheet that precedes xl/workbook.xml in the archive', async function () {
-      this.timeout(5000);
-
+    it('reads a worksheet that precedes xl/workbook.xml in the archive', async () => {
       const wb = new ExcelJS.Workbook();
       const ws = wb.addWorksheet(SHEET_NAME);
       ws.addRow(['alpha', 'beta', 42]);
@@ -79,6 +77,6 @@ describe('WorkbookReader', () => {
         [undefined, 'alpha', 'beta', 42],
         [undefined, 'gamma', 'alpha', 7],
       ]);
-    });
+    }, 5000);
   });
 });
