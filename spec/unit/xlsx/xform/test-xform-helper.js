@@ -20,6 +20,12 @@ function getExpectation(expectation, name) {
 //  parse:  xml => parsedModel
 //  reconcile: parsedModel => reconciledModel
 
+// An expectation may list test kinds in `knownFailures` (e.g. ['render', 'renderIn']);
+// those run with it.fails, so they pass while broken and flag when the bug gets fixed.
+function itFor(expectation, kind) {
+  return (expectation.knownFailures || []).includes(kind) ? it.fails : it;
+}
+
 const its = {
   prepare(expectation) {
     it('Prepare Model', () =>
@@ -35,20 +41,23 @@ const its = {
   },
 
   render(expectation) {
-    it('Render to XML', () =>
-      new Promise((resolve) => {
-        const model = getExpectation(expectation, 'preparedModel');
-        const result = getExpectation(expectation, 'xml');
+    itFor(expectation, 'render')(
+      'Render to XML',
+      () =>
+        new Promise((resolve) => {
+          const model = getExpectation(expectation, 'preparedModel');
+          const result = getExpectation(expectation, 'xml');
 
-        const xform = expectation.create();
-        const xmlStream = new XmlStream();
-        xform.render(xmlStream, model, 0);
-        // console.log(xmlStream.xml);
-        // console.log(result);
+          const xform = expectation.create();
+          const xmlStream = new XmlStream();
+          xform.render(xmlStream, model, 0);
+          // console.log(xmlStream.xml);
+          // console.log(result);
 
-        expect(xmlStream.xml).xml.to.equal(result);
-        resolve();
-      }));
+          expect(xmlStream.xml).xml.to.equal(result);
+          resolve();
+        }),
+    );
   },
 
   'prepare-render': function (expectation) {
@@ -70,37 +79,40 @@ const its = {
   },
 
   renderIn(expectation) {
-    it('Render in Composite to XML ', () =>
-      new Promise((resolve) => {
-        const model = {
-          pre: true,
-          child: getExpectation(expectation, 'preparedModel'),
-          post: true,
-        };
-        const result = `<compy><pre/>${getExpectation(expectation, 'xml')}<post/></compy>`;
+    itFor(expectation, 'renderIn')(
+      'Render in Composite to XML ',
+      () =>
+        new Promise((resolve) => {
+          const model = {
+            pre: true,
+            child: getExpectation(expectation, 'preparedModel'),
+            post: true,
+          };
+          const result = `<compy><pre/>${getExpectation(expectation, 'xml')}<post/></compy>`;
 
-        const xform = new CompyXform({
-          tag: 'compy',
-          children: [
-            {
-              name: 'pre',
-              xform: new BooleanXform({ tag: 'pre', attr: 'val' }),
-            },
-            { name: 'child', xform: expectation.create() },
-            {
-              name: 'post',
-              xform: new BooleanXform({ tag: 'post', attr: 'val' }),
-            },
-          ],
-        });
+          const xform = new CompyXform({
+            tag: 'compy',
+            children: [
+              {
+                name: 'pre',
+                xform: new BooleanXform({ tag: 'pre', attr: 'val' }),
+              },
+              { name: 'child', xform: expectation.create() },
+              {
+                name: 'post',
+                xform: new BooleanXform({ tag: 'post', attr: 'val' }),
+              },
+            ],
+          });
 
-        const xmlStream = new XmlStream();
-        xform.render(xmlStream, model);
-        // console.log(xmlStream.xml);
+          const xmlStream = new XmlStream();
+          xform.render(xmlStream, model);
+          // console.log(xmlStream.xml);
 
-        expect(xmlStream.xml).xml.to.equal(result);
-        resolve();
-      }));
+          expect(xmlStream.xml).xml.to.equal(result);
+          resolve();
+        }),
+    );
   },
 
   parseIn(expectation) {

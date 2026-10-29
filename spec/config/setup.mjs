@@ -1,9 +1,9 @@
 import { createRequire } from 'node:module';
 import { chai } from 'vitest';
 import chaiDatetime from 'chai-datetime';
-import chaiXml from 'chai-xml';
+import chaiXmlOrdered from '../utils/chai-xml-ordered.js';
 
 globalThis.verquire = createRequire(import.meta.url)('../utils/verquire');
 
-chai.use(chaiXml);
+chai.use(chaiXmlOrdered);
 chai.use(chaiDatetime);
