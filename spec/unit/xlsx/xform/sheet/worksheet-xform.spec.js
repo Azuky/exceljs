@@ -6,7 +6,7 @@ const testXformHelper = require('../test-xform-helper');
 const Enums = verquire('doc/enums');
 const RelType = verquire('xlsx/rel-type');
 const parseSax = verquire('utils/parse-sax');
-const { knownBug } = require('../../../../utils/known-bug');
+const { findAll } = require('../../../../utils/xml-tree');
 const XmlStream = verquire('utils/xml-stream');
 const WorksheetXform = verquire('xlsx/xform/sheet/worksheet-xform');
 
@@ -112,6 +112,41 @@ const expectations = [
       formulae: {},
       siFormulae: 0,
     },
+  },
+  {
+    // CT_Worksheet order: ... drawing, legacyDrawing, ..., tableParts, extLst
+    title: 'Sheet 8 - Comments and Table (legacyDrawing)',
+    create: () => new WorksheetXform(),
+    preparedModel: {
+      ...cloneEmptySheet(),
+      rels: [{ Id: 'rId1', Type: RelType.VmlDrawing, Target: '../drawings/vmlDrawing1.vml' }],
+      tables: [{ rId: 'rId2' }],
+    },
+    xml: `<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="x14ac" xmlns:x14ac="http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac">
+      <dimension ref="A1:A1"/>
+      <sheetFormatPr defaultRowHeight="14.4" customHeight="1" x14ac:dyDescent="0.55" outlineLevelRow="2"/>
+      <sheetData/>
+      <legacyDrawing r:id="rId1"/>
+      <tableParts count="1"><tablePart r:id="rId2"/></tableParts>
+    </worksheet>`,
+    // known bug: legacyDrawing is written after tableParts (and extLst); undo only the move
+    knownDeviations: {
+      render: {
+        reason:
+          /actual \[dimension,sheetFormatPr,sheetData,tableParts,legacyDrawing\] vs expected \[dimension,sheetFormatPr,sheetData,legacyDrawing,tableParts\]/,
+        neutralise(root) {
+          const [legacy] = findAll(root, 'legacyDrawing');
+          root.children.splice(root.children.indexOf(legacy), 1);
+          root.children.splice(
+            root.children.findIndex((child) => child.name === 'tableParts'),
+            0,
+            legacy,
+          );
+        },
+      },
+    },
+    tests: ['render'],
+    options: {},
   },
   {
     title: 'Sheet 2 - Data Validations',
@@ -552,28 +587,5 @@ describe('WorksheetXform', () => {
         });
       });
     });
-  });
-
-  describe('element order', () => {
-    // CT_Worksheet (ECMA-376 18.3.1.99): ... drawing, legacyDrawing, ..., picture, ..., tableParts, extLst
-    knownBug(
-      'legacyDrawing must come before tableParts',
-      () => {
-        const xform = new WorksheetXform();
-        const xmlStream = new XmlStream();
-        xform.render(xmlStream, {
-          ...cloneEmptySheet(),
-          rels: [{ Id: 'rId1', Type: RelType.VmlDrawing, Target: '../drawings/vmlDrawing1.vml' }],
-          tables: [{ rId: 'rId2' }],
-        });
-        const { xml } = xmlStream;
-        const iLegacy = xml.indexOf('<legacyDrawing');
-        const iTableParts = xml.indexOf('<tableParts');
-        expect(iLegacy).not.to.equal(-1);
-        expect(iTableParts).not.to.equal(-1);
-        expect(iLegacy).to.be.lessThan(iTableParts);
-      },
-      /expected \d+ to be below \d+/,
-    );
   });
 });

@@ -1,4 +1,12 @@
 const testXformHelper = require('../test-xform-helper');
+const { findAll } = require('../../../../utils/xml-tree');
+
+// CT_OneCellAnchor has no attributes: undo only the editAs the lib writes there
+const removeEditAs = (root) => {
+  findAll(root, 'xdr:oneCellAnchor').forEach((anchor) => {
+    delete anchor.attrs.editAs;
+  });
+};
 
 const OneCellAnchorXform = verquire('xlsx/xform/drawing/one-cell-anchor-xform');
 
@@ -51,8 +59,12 @@ const expectations = [
       media: [medium],
     },
     // known bug: lib writes editAs on oneCellAnchor (CT_OneCellAnchor has no attributes)
-    knownFailures: ['render', 'renderIn'],
-    knownFailureMessage: /xdr:oneCellAnchor(\[1\])?: attributes \[editAs\] !== \[\]/,
+    knownDeviations: {
+      render: {
+        reason: /xdr:oneCellAnchor(\[1\])?: attributes \[editAs\] !== \[\]/,
+        neutralise: removeEditAs,
+      },
+    },
     tests: ['prepare', 'render', 'renderIn', 'parse', 'reconcile'],
   },
 ];
