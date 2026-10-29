@@ -1,0 +1,6 @@
+minimumReleaseAge: 1440
+allowBuilds:
+  core-js: false
+  fsevents: false
+  husky: false
+  puppeteer: false
