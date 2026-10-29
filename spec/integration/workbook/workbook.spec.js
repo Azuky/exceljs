@@ -1254,7 +1254,7 @@ describe('Workbook', () => {
         expect(text).to.equal('<string>,<number>,<object>');
       });
 
-      // known bug: falsy formula results (0, false) are written as empty fields because of `value.result || ''` — see stage-2 notes
+      // known bug: falsy formula results (0, false) are written as empty fields because of `value.result || ''` — see spec/KNOWN-BUGS.md
       knownBug(
         'writes falsy formula results',
         async () => {
@@ -1269,7 +1269,7 @@ describe('Workbook', () => {
         /expected ',' to equal '0,false'/,
       );
 
-      // known bug (needs owner confirmation, may be by design): rich text cells are written as a JSON blob instead of their text — see stage-2 notes
+      // known bug (needs owner confirmation, may be by design): rich text cells are written as a JSON blob instead of their text — see spec/KNOWN-BUGS.md
       knownBug(
         'writes a rich text cell as its plain concatenated text',
         async () => {
@@ -1347,7 +1347,7 @@ describe('Workbook', () => {
         expect(rowValues(ws)).to.deep.equal(['2020-13-45', '01/02/2020']);
       });
 
-      // known bug: dateFormats 'YYYY-MM-DD[T]HH:mm:ssZ' is matched strictly against the local offset, so a UTC "...Z" timestamp (what write emits with dateUTC) stays a string — see stage-2 notes
+      // known bug: dateFormats 'YYYY-MM-DD[T]HH:mm:ssZ' is matched strictly against the local offset, so a UTC "...Z" timestamp (what write emits with dateUTC) stays a string — see spec/KNOWN-BUGS.md
       knownBug(
         'reads back the UTC timestamps that write emits with dateUTC',
         async () => {
@@ -1386,7 +1386,7 @@ describe('Workbook', () => {
         expect(rowValues(ws, 2)).to.deep.equal([null, 'd']);
       });
 
-      // known bug: parserOptions.headers makes fast-csv emit objects, but read() calls data.map on each row, so every read rejects — see stage-2 notes
+      // known bug: parserOptions.headers makes fast-csv emit objects, but read() calls data.map on each row, so every read rejects — see spec/KNOWN-BUGS.md
       knownBug(
         'reads with parserOptions.headers',
         async () => {
