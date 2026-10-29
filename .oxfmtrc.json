@@ -6,8 +6,8 @@
   "tabWidth": 2,
   "endOfLine": "lf",
   "ignorePatterns": [
-    "dist",
-    "build",
+    "/dist",
+    "/build",
     ".baseline",
     "graphify-out",
     "pnpm-lock.yaml",

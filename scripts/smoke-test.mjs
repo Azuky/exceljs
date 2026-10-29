@@ -36,7 +36,7 @@ try {
     path.join(app, 'package.json'),
     JSON.stringify({ name: 'exceljs-smoke-app', version: '1.0.0', private: true }),
   );
-  run('npm', ['install', '--no-audit', '--no-fund', path.join(tmp, tarball)], app);
+  run('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', path.join(tmp, tarball)], app);
 
   fs.copyFileSync(path.join(smokeDir, 'consumer.cjs'), path.join(app, 'consumer.cjs'));
   fs.copyFileSync(path.join(smokeDir, 'consumer.mjs'), path.join(app, 'consumer.mjs'));

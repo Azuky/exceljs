@@ -4,8 +4,8 @@
   "categories": { "correctness": "error" },
   "env": { "node": true, "es2024": true },
   "ignorePatterns": [
-    "dist",
-    "build",
+    "/dist",
+    "/build",
     ".baseline",
     "graphify-out",
     "pnpm-lock.yaml",
