@@ -1,4 +1,5 @@
 const testXformHelper = require('../../test-xform-helper');
+const { findAll } = require('../../../../../utils/xml-tree');
 
 const IconSetExtXform = verquire('xlsx/xform/sheet/cf-ext/icon-set-ext-xform');
 
@@ -157,8 +158,17 @@ const expectations = [
       ],
     },
     // known bug: render overwrites icon.iconId with the position in the list
-    knownFailures: ['render', 'renderIn'],
-    knownFailureMessage: /x14:cfIcon\[\d+\]@iconId: "0" !== "2"/,
+    knownDeviations: {
+      render: {
+        reason: /x14:cfIcon\[\d+\]@iconId: "0" !== "2"/,
+        // put the caller's iconIds back (the lib writes 0, 1, 2)
+        neutralise(root) {
+          findAll(root, 'x14:cfIcon').forEach((icon, i) => {
+            icon.attrs.iconId = String([2, 0, 1][i]);
+          });
+        },
+      },
+    },
     tests: ['render', 'renderIn', 'parse'],
   },
 ];

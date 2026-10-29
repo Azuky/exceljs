@@ -2,6 +2,7 @@ const fs = require('fs');
 
 const testXformHelper = require('../test-xform-helper');
 
+const { findAll } = require('../../../../utils/xml-tree');
 const TableXform = verquire('xlsx/xform/table/table-xform');
 const TableColumnXform = verquire('xlsx/xform/table/table-column-xform');
 const { knownBug } = require('../../../../utils/known-bug');
@@ -113,9 +114,28 @@ const expectations = [
       },
     },
     // known bug: lib writes/reads `dxfId`; CT_TableColumn only has dataDxfId (headerRowDxfId, totalsRowDxfId)
-    knownFailures: ['render'],
-    knownFailureMessage: /tableColumn\[1\]: attributes \[dxfId,id,name\] !== \[dataDxfId,id,name\]/,
-    tests: ['render', 'reconcile'],
+    knownDeviations: {
+      render: {
+        reason: /tableColumn\[1\]: attributes \[dxfId,id,name\] !== \[dataDxfId,id,name\]/,
+        neutralise(root) {
+          findAll(root, 'tableColumn').forEach((column) => {
+            if (column.attrs.dxfId !== undefined) {
+              column.attrs.dataDxfId = column.attrs.dxfId;
+              delete column.attrs.dxfId;
+            }
+          });
+        },
+      },
+      parse: {
+        reason: /expected \{ name: 'Styled'.*to deeply equal/,
+        // dataDxfId is not read: put the value of the styled column back
+        neutralise(model) {
+          model.columns[1].dxfId = '0';
+          return model;
+        },
+      },
+    },
+    tests: ['render', 'parse', 'reconcile'],
   },
 ];
 

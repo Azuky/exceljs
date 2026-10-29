@@ -2,6 +2,20 @@ const testXformHelper = require('../../test-xform-helper');
 const XmlStream = verquire('utils/xml-stream');
 const { knownBug } = require('../../../../../utils/known-bug');
 
+const { findAll } = require('../../../../../utils/xml-tree');
+
+// known bug: operator="containsText" and text="foo" (as Excel writes them) are not written;
+// undo only those two attributes
+const containsTextDeviation = {
+  reason: /attributes \[dxfId,priority,type\] !== \[dxfId,operator,priority,text,type\]/,
+  neutralise(root) {
+    findAll(root, 'cfRule').forEach((rule) => {
+      rule.attrs.operator = 'containsText';
+      rule.attrs.text = 'foo';
+    });
+  },
+};
+
 const CfRuleXform = verquire('xlsx/xform/sheet/cf/cf-rule-xform');
 
 const expectations = [
@@ -283,9 +297,7 @@ const expectations = [
       priority: 1,
       formulae: ['NOT(ISERROR(SEARCH("foo",B2)))'],
     },
-    // known bug: operator="containsText" and text="foo" (as Excel writes them) are not written
-    knownFailures: ['render', 'renderIn'],
-    knownFailureMessage: /attributes \[dxfId,priority,type\] !== \[dxfId,operator,priority,text,type\]/,
+    knownDeviations: { render: containsTextDeviation },
     tests: ['render', 'renderIn', 'parse'],
   },
   {
@@ -314,9 +326,7 @@ const expectations = [
       priority: 1,
       formulae: ['ISNUMBER(SEARCH("bar",B2))'],
     },
-    // known bug: operator="containsText" and text="foo" (as Excel writes them) are not written
-    knownFailures: ['render'],
-    knownFailureMessage: /attributes \[dxfId,priority,type\] !== \[dxfId,operator,priority,text,type\]/,
+    knownDeviations: { render: containsTextDeviation },
     tests: ['render', 'parse'],
   },
   ...[
@@ -351,8 +361,17 @@ const expectations = [
       formulae: [formula],
     },
     // known bug: render writes operator="<type>", which is not a valid operator value
-    knownFailures: ['render', 'renderIn'],
-    knownFailureMessage: /attributes \[dxfId,operator,priority,type\] !== \[dxfId,priority,type\]/,
+    knownDeviations: {
+      render: {
+        reason: /attributes \[dxfId,operator,priority,type\] !== \[dxfId,priority,type\]/,
+        // undo only the invalid operator attribute
+        neutralise(root) {
+          findAll(root, 'cfRule').forEach((rule) => {
+            delete rule.attrs.operator;
+          });
+        },
+      },
+    },
     tests: ['render', 'renderIn', 'parse'],
   })),
   ...[
