@@ -1269,7 +1269,7 @@ describe('Workbook', () => {
         /expected ',' to equal '0,false'/,
       );
 
-      // known bug (needs owner confirmation, may be by design): rich text cells are written as a JSON blob instead of their text — see spec/KNOWN-BUGS.md
+      // known bug: rich text cells are written as a JSON blob instead of their text — see spec/KNOWN-BUGS.md
       knownBug(
         'writes a rich text cell as its plain concatenated text',
         async () => {

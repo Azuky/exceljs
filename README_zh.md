@@ -2337,10 +2337,10 @@ await workbook.commit();
 | --------------------- | ----------- |
 | input (必需的)        | 指定从中读取XLSX工作簿的文件或可读流的名称|
 | options (可选的)      | 指定如何处理读取解析期间发生的事件类型 |
-| options.entries       | 指定是否去触发事件(`'emit'`)或者不发出事件(`'ignore'`)，默认值是`'emit'` |
+| options.entries       | 指定是否去触发事件(`'emit'`)或者不发出事件(`'ignore'`)，默认值是`'ignore'` |
 | options.sharedStrings | 指定是否去缓存(`'cache'`)共享字符串，将其插入到相应的单元格值中，或者是否去触发(`'emit'`)或忽略(`'ignore'`)它们，在这两种情况下，单元格值都将是对共享字符串索引的引用。默认值是`'cache'` |
-| options.hyperlinks    | 指定是否去缓存超链接(`'cache'`)，将其插入到相应的单元格值中，是否去触发(`'emit'`)或忽略(`'ignore'`)它们。默认值是`'cache'` |
-| options.styles        | 指定是否去缓存样式(`'cache'`)，将其插入到相应的行或单元格值中，或是否忽略(`'忽略'`)它们。默认值是`'cache'`  |
+| options.hyperlinks    | 指定是否去缓存超链接(`'cache'`)，将其插入到相应的单元格值中，是否去触发(`'emit'`)或忽略(`'ignore'`)它们。默认值是`'ignore'` |
+| options.styles        | 指定是否去缓存样式(`'cache'`)，将其插入到相应的行或单元格值中，或是否忽略(`'忽略'`)它们。默认值是`'ignore'`  |
 | options.worksheets    |指定是否去触发(`'emit'`)或忽略(`'ignore'`)工作表。默认值是`'emit'` |
 
 ```js
