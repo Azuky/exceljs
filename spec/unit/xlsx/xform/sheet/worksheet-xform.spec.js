@@ -59,6 +59,11 @@ function fixDate(model) {
   return model;
 }
 
+// the fixture is shared through require, never hand it to a xform without cloning it
+function cloneEmptySheet() {
+  return JSON.parse(JSON.stringify(require('./data/sheet.3.1.json')));
+}
+
 // drop undefined members so models compare equal
 function cloneForCompare(model) {
   return JSON.parse(JSON.stringify(model));
@@ -442,7 +447,7 @@ describe('WorksheetXform', () => {
     describe('write then read', () => {
       const writeThenRead = async (conditionalFormattings) => {
         const model = {
-          ...require('./data/sheet.3.1.json'),
+          ...cloneEmptySheet(),
           conditionalFormattings,
         };
         const xform = new WorksheetXform();
@@ -557,7 +562,7 @@ describe('WorksheetXform', () => {
         const xform = new WorksheetXform();
         const xmlStream = new XmlStream();
         xform.render(xmlStream, {
-          ...require('./data/sheet.3.1.json'),
+          ...cloneEmptySheet(),
           rels: [{ Id: 'rId1', Type: RelType.VmlDrawing, Target: '../drawings/vmlDrawing1.vml' }],
           tables: [{ rId: 'rId2' }],
         });

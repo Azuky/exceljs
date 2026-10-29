@@ -106,6 +106,7 @@ const expectations = [
   },
   {
     // the phonetic runs are not part of the shared string model: only the base text is kept
+    // deliberately not schema-valid: CT_PhoneticRun only contains <t>, <r> inside <rPh> checks the parser tolerates it
     title: 'text + phonetic with rich text runs',
     create() {
       return new SharedStringXform();

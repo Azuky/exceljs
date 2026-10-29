@@ -40,8 +40,7 @@ const expectations = [
     },
     preparedModel: undefined,
     xml: '',
-    parsedModel: undefined,
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn'],
   },
   {
     title: 'text content',

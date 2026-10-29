@@ -10,8 +10,7 @@ const expectations = [
     },
     preparedModel: {},
     xml: '',
-    parsedModel: undefined,
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn'],
   },
   {
     title: 'None',

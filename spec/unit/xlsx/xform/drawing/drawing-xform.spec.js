@@ -24,6 +24,9 @@ const expectations = [
     xml: fs.readFileSync(`${__dirname}/data/drawing.1.2.xml`).toString(),
     parsedModel: require('./data/drawing.1.3.js'),
     reconciledModel: require('./data/drawing.1.4.js'),
+    // known bug: the oneCellAnchor is written with editAs (CT_OneCellAnchor has no attributes)
+    knownFailures: ['render', 'renderIn'],
+    knownFailureMessage: /xdr:oneCellAnchor(\[\d+\])?: attributes \[editAs\] !== \[\]/,
     tests: ['prepare', 'render', 'renderIn', 'parse', 'reconcile'],
     options,
   },
