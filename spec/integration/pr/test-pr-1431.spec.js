@@ -1,9 +1,7 @@
 const ExcelJS = verquire('exceljs');
 
 describe('github issues', () => {
-  // Skipped (Stage 1, owner decision 2026-10-28): streaming WorkbookReader shared-strings race (rows emitted
-  // before sharedStrings are parsed). Un-skip with the fix(stream) backlog task.
-  it.skip('pull request 1431 - streaming reader should handle rich text within shared strings', async () => {
+  it('pull request 1431 - streaming reader should handle rich text within shared strings', async () => {
     const rowData = [
       {
         richText: [
