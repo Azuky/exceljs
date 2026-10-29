@@ -1,3 +1,5 @@
+const { knownBug } = require('../../utils/known-bug');
+
 const fs = require('fs');
 const path = require('path');
 
@@ -61,13 +63,17 @@ describe('StreamBuf', () => {
 
   describe('partial reads', () => {
     // known bug: BufferChunk read(size) copies up to index `size` instead of `iRead + size`, so a second partial read returns NUL bytes — see stage-2 notes
-    it.fails('reads a buffer back in consecutive slices', () => {
-      const stream = new StreamBuf();
-      stream.write('abcdefghij');
-      expect(stream.read(3).toString()).to.equal('abc');
-      expect(stream.read(3).toString()).to.equal('def');
-      expect(stream.read(10).toString()).to.equal('ghij');
-    });
+    knownBug(
+      'reads a buffer back in consecutive slices',
+      () => {
+        const stream = new StreamBuf();
+        stream.write('abcdefghij');
+        expect(stream.read(3).toString()).to.equal('abc');
+        expect(stream.read(3).toString()).to.equal('def');
+        expect(stream.read(10).toString()).to.equal('ghij');
+      },
+      /expected '\\u0000\\u0000\\u0000' to equal 'def'/,
+    );
 
     it('returns the first slice of a buffer for a partial read', () => {
       const stream = new StreamBuf();

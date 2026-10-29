@@ -171,7 +171,7 @@ describe('Workbook', () => {
 
       it('does not register a pivot table that failed validation', () => {
         const { workbook, source, target } = setup();
-        expect(() => target.addPivotTable(model(source, { rows: [] }))).to.throw();
+        expect(() => target.addPivotTable(model(source, { rows: [] }))).to.throw('No pivot table rows specified.');
         expect(target.pivotTables).to.deep.equal([]);
         expect(workbook.pivotTables).to.deep.equal([]);
       });

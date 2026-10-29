@@ -1,3 +1,5 @@
+const { knownBug } = require('../../utils/known-bug');
+
 const { PassThrough, Readable } = require('stream');
 
 const testUtils = require('../../utils/index');
@@ -1156,21 +1158,29 @@ describe('Workbook', () => {
       });
 
       // known bug: falsy formula results (0, false) are written as empty fields because of `value.result || ''` — see stage-2 notes
-      it.fails('writes falsy formula results', async () => {
-        const { wb } = workbookWithRows([
-          [
-            { formula: '1-1', result: 0 },
-            { formula: 'A1', result: false },
-          ],
-        ]);
-        expect(await bufferText(wb)).to.equal('0,false');
-      });
+      knownBug(
+        'writes falsy formula results',
+        async () => {
+          const { wb } = workbookWithRows([
+            [
+              { formula: '1-1', result: 0 },
+              { formula: 'A1', result: false },
+            ],
+          ]);
+          expect(await bufferText(wb)).to.equal('0,false');
+        },
+        /expected ',' to equal '0,false'/,
+      );
 
       // known bug (needs owner confirmation, may be by design): rich text cells are written as a JSON blob instead of their text — see stage-2 notes
-      it.fails('writes a rich text cell as its plain concatenated text', async () => {
-        const { wb } = workbookWithRows([[{ richText: [{ text: 'Hel' }, { text: 'lo' }] }]]);
-        expect(await bufferText(wb)).to.equal('Hello');
-      });
+      knownBug(
+        'writes a rich text cell as its plain concatenated text',
+        async () => {
+          const { wb } = workbookWithRows([[{ richText: [{ text: 'Hel' }, { text: 'lo' }] }]]);
+          expect(await bufferText(wb)).to.equal('Hello');
+        },
+        /richText.*to equal 'Hello'/s,
+      );
     });
 
     describe('write', () => {
@@ -1241,13 +1251,17 @@ describe('Workbook', () => {
       });
 
       // known bug: dateFormats 'YYYY-MM-DD[T]HH:mm:ssZ' is matched strictly against the local offset, so a UTC "...Z" timestamp (what write emits with dateUTC) stays a string — see stage-2 notes
-      it.fails('reads back the UTC timestamps that write emits with dateUTC', async () => {
-        const original = new Date('2020-01-02T03:04:05Z');
-        const { wb } = workbookWithRows([[original]]);
-        const text = await bufferText(wb, { dateUTC: true });
-        const { ws } = await readCsv(text);
-        expect(ws.getCell('A1').value).to.deep.equal(original);
-      });
+      knownBug(
+        'reads back the UTC timestamps that write emits with dateUTC',
+        async () => {
+          const original = new Date('2020-01-02T03:04:05Z');
+          const { wb } = workbookWithRows([[original]]);
+          const text = await bufferText(wb, { dateUTC: true });
+          const { ws } = await readCsv(text);
+          expect(ws.getCell('A1').value).to.deep.equal(original);
+        },
+        /expected '2020-01-02T03:04:05Z' to deeply equal 2020-01-02T03:04:05\.000Z/,
+      );
 
       it('uses custom dateFormats', async () => {
         const { ws } = await readCsv('31/12/2020,2020-12-31\n', { dateFormats: ['DD/MM/YYYY'] });
@@ -1274,6 +1288,16 @@ describe('Workbook', () => {
         expect(ws.rowCount).to.equal(2);
         expect(rowValues(ws, 2)).to.deep.equal([null, 'd']);
       });
+
+      // known bug: parserOptions.headers makes fast-csv emit objects, but read() calls data.map on each row, so every read rejects — see stage-2 notes
+      knownBug(
+        'reads with parserOptions.headers',
+        async () => {
+          const { ws } = await readCsv('a,b\n1,2\n', { parserOptions: { headers: true } });
+          expect(ws.rowCount).to.be.above(0);
+        },
+        /data\.map is not a function/,
+      );
 
       it('passes parserOptions to the parser', async () => {
         const { ws } = await readCsv('a;b\n', { parserOptions: { delimiter: ';' } });
