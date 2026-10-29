@@ -167,4 +167,68 @@ describe('Column', () => {
 
     expect(model[2].width).to.equal(9);
   });
+
+  describe('collapsed', () => {
+    it('is true once the outline level reaches the sheet outlineLevelCol', () => {
+      const sheet = createSheetMock();
+      sheet.properties.outlineLevelCol = 2;
+      const column = sheet.getColumn(1);
+
+      column.outlineLevel = 1;
+      expect(column.collapsed).to.equal(false);
+      column.outlineLevel = 2;
+      expect(column.collapsed).to.equal(true);
+      column.outlineLevel = 3;
+      expect(column.collapsed).to.equal(true);
+    });
+
+    it('is false for a column without an outline level', () => {
+      const sheet = createSheetMock();
+      sheet.properties.outlineLevelCol = 0;
+      const column = sheet.getColumn(1);
+      expect(column.outlineLevel).to.equal(0);
+      expect(column.collapsed).to.equal(false);
+    });
+  });
+
+  describe('styles', () => {
+    it('reads back font, alignment, border, fill, protection and numFmt it was given', () => {
+      const sheet = createSheetMock();
+      const column = sheet.getColumn(1);
+
+      column.font = { bold: true };
+      column.alignment = { vertical: 'top' };
+      column.border = { left: { style: 'thin' } };
+      column.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF00FF00' } };
+      column.protection = { locked: false };
+      column.numFmt = '0.00%';
+
+      expect(column.font).to.deep.equal({ bold: true });
+      expect(column.alignment).to.deep.equal({ vertical: 'top' });
+      expect(column.border).to.deep.equal({ left: { style: 'thin' } });
+      expect(column.fill.fgColor).to.deep.equal({ argb: 'FF00FF00' });
+      expect(column.protection).to.deep.equal({ locked: false });
+      expect(column.numFmt).to.equal('0.00%');
+    });
+
+    it('applies a style to the cells already in the column', () => {
+      const sheet = createSheetMock();
+      const column = sheet.getColumn(1);
+      sheet.getCell(1, 1).value = 'a';
+      sheet.getCell(2, 1).value = 'b';
+
+      column.protection = { locked: false };
+
+      expect(sheet.getCell(1, 1).protection).to.deep.equal({ locked: false });
+      expect(sheet.getCell(2, 1).protection).to.deep.equal({ locked: false });
+    });
+  });
+
+  describe('toString', () => {
+    it('describes key, width and headers as JSON', () => {
+      const sheet = createSheetMock();
+      const column = sheet.addColumn(1, { header: 'Col 1', key: 'id1', width: 10 });
+      expect(JSON.parse(column.toString())).to.deep.equal({ key: 'id1', width: 10, headers: ['Col 1'] });
+    });
+  });
 });

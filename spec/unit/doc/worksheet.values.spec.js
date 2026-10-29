@@ -703,4 +703,39 @@ describe('Worksheet', () => {
       expect(ws.actualColumnCount).to.equal(4);
     });
   });
+
+  describe('Row lookup', () => {
+    function sheetWithRows(count) {
+      const ws = new Excel.Workbook().addWorksheet('blort');
+      for (let i = 1; i <= count; i++) {
+        ws.getCell(`A${i}`).value = i;
+      }
+      return ws;
+    }
+
+    it('findRows returns the requested run of rows', () => {
+      const ws = sheetWithRows(5);
+      expect(ws.findRows(2, 3).map((row) => row.number)).to.deep.equal([2, 3, 4]);
+    });
+
+    it('findRows stops at the last existing row', () => {
+      const ws = sheetWithRows(5);
+      expect(ws.findRows(4, 10).map((row) => row.number)).to.deep.equal([4, 5]);
+      expect(ws.findRows(6, 2)).to.deep.equal([]);
+    });
+
+    it('findRow returns undefined for a row that does not exist', () => {
+      const ws = sheetWithRows(2);
+      expect(ws.findRow(2).number).to.equal(2);
+      expect(ws.findRow(3)).to.equal(undefined);
+    });
+
+    it('lastRow is undefined on an empty sheet and the final row otherwise', () => {
+      const ws = new Excel.Workbook().addWorksheet('blort');
+      expect(ws.lastRow).to.equal(undefined);
+      ws.getCell('A1').value = 1;
+      ws.getCell('A4').value = 4;
+      expect(ws.lastRow.number).to.equal(4);
+    });
+  });
 });

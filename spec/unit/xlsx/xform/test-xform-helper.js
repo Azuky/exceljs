@@ -20,10 +20,22 @@ function getExpectation(expectation, name) {
 //  parse:  xml => parsedModel
 //  reconcile: parsedModel => reconciledModel
 
-// An expectation may list test kinds in `knownFailures` (e.g. ['render', 'renderIn']);
-// those run with it.fails, so they pass while broken and flag when the bug gets fixed.
+// An expectation may list test kinds in `knownFailures` (e.g. ['render', 'renderIn']) together
+// with `knownFailureMessage` (a RegExp the failure message must match). Those tests pass while
+// broken for exactly that reason, and fail when the bug gets fixed or fails for another reason.
 function itFor(expectation, kind) {
-  return (expectation.knownFailures || []).includes(kind) ? it.fails : it;
+  if (!(expectation.knownFailures || []).includes(kind)) return it;
+  return (title, fn) =>
+    it(title, async () => {
+      let error;
+      try {
+        await fn();
+      } catch (e) {
+        error = e;
+      }
+      expect(error, 'expected the known failure to still occur').to.be.an('error');
+      expect(error.message).to.match(expectation.knownFailureMessage);
+    });
 }
 
 const its = {

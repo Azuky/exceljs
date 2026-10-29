@@ -58,4 +58,52 @@ describe('StreamBuf', () => {
       expect(e.message).to.equal('Chunk must be one of type String, Buffer or StringBuf.');
     }
   });
+
+  describe('partial reads', () => {
+    // known bug: BufferChunk read(size) copies up to index `size` instead of `iRead + size`, so a second partial read returns NUL bytes — see stage-2 notes
+    it.fails('reads a buffer back in consecutive slices', () => {
+      const stream = new StreamBuf();
+      stream.write('abcdefghij');
+      expect(stream.read(3).toString()).to.equal('abc');
+      expect(stream.read(3).toString()).to.equal('def');
+      expect(stream.read(10).toString()).to.equal('ghij');
+    });
+
+    it('returns the first slice of a buffer for a partial read', () => {
+      const stream = new StreamBuf();
+      stream.write('abcdefghij');
+      expect(stream.read(3).toString()).to.equal('abc');
+    });
+
+    it('returns everything when asked for more than is buffered', () => {
+      const stream = new StreamBuf();
+      stream.write('abcde');
+      expect(stream.read(100).toString()).to.equal('abcde');
+    });
+  });
+
+  describe('write after end', () => {
+    // characterises current behaviour: unlike a plain node Writable, StreamBuf does not reject writes after end()
+    it('keeps accepting writes after end() and appends them to the buffer', async () => {
+      const stream = new StreamBuf();
+      stream.write('ab');
+      stream.end();
+      const result = await stream.write('cd');
+      expect(result).to.equal(true);
+      expect(stream.toBuffer().toString()).to.equal('abcd');
+    });
+  });
+
+  describe('error event', () => {
+    it('delivers an emitted error to listeners and keeps buffered data readable', () => {
+      const stream = new StreamBuf();
+      const errors = [];
+      stream.on('error', (e) => errors.push(e));
+      stream.write('data');
+      const failure = new Error('boom');
+      stream.emit('error', failure);
+      expect(errors).to.deep.equal([failure]);
+      expect(stream.read().toString()).to.equal('data');
+    });
+  });
 });

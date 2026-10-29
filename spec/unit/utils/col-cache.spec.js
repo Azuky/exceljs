@@ -64,54 +64,54 @@ describe('colCache', () => {
   it('throws when out of bounds', () => {
     expect(() => {
       colCache.n2l(0);
-    }).to.throw(Error);
+    }).to.throw('0 is out of bounds. Excel supports columns from 1 to 16384');
     expect(() => {
       colCache.n2l(-1);
-    }).to.throw(Error);
+    }).to.throw('-1 is out of bounds. Excel supports columns from 1 to 16384');
     expect(() => {
       colCache.n2l(16385);
-    }).to.throw(Error);
+    }).to.throw('16385 is out of bounds. Excel supports columns from 1 to 16384');
 
     expect(() => {
       colCache.l2n('');
-    }).to.throw(Error);
+    }).to.throw('Out of bounds. Invalid column letter: ');
     expect(() => {
       colCache.l2n('AAAA');
-    }).to.throw(Error);
+    }).to.throw('Out of bounds. Excel supports columns from 1 to 16384');
     expect(() => {
       colCache.l2n(16385);
-    }).to.throw(Error);
+    }).to.throw('Out of bounds. Invalid column letter: 16385');
   });
 
   it('validates addresses properly', () => {
-    expect(colCache.validateAddress('A1')).to.be.ok;
-    expect(colCache.validateAddress('AA10')).to.be.ok;
-    expect(colCache.validateAddress('ABC100000')).to.be.ok;
+    expect(colCache.validateAddress('A1')).to.equal(true);
+    expect(colCache.validateAddress('AA10')).to.equal(true);
+    expect(colCache.validateAddress('ABC100000')).to.equal(true);
 
     expect(() => {
       colCache.validateAddress('A');
-    }).to.throw(Error);
+    }).to.throw('Invalid Address: A');
     expect(() => {
       colCache.validateAddress('1');
-    }).to.throw(Error);
+    }).to.throw('Invalid Address: 1');
     expect(() => {
       colCache.validateAddress('1A');
-    }).to.throw(Error);
+    }).to.throw('Invalid Address: 1A');
     expect(() => {
       colCache.validateAddress('A 1');
-    }).to.throw(Error);
+    }).to.throw('Invalid Address: A 1');
     expect(() => {
       colCache.validateAddress('A1A');
-    }).to.throw(Error);
+    }).to.throw('Invalid Address: A1A');
     expect(() => {
       colCache.validateAddress('1A1');
-    }).to.throw(Error);
+    }).to.throw('Invalid Address: 1A1');
     expect(() => {
       colCache.validateAddress('a1');
-    }).to.throw(Error);
+    }).to.throw('Invalid Address: a1');
     expect(() => {
       colCache.validateAddress('a');
-    }).to.throw(Error);
+    }).to.throw('Invalid Address: a');
   });
 
   it('decodes addresses', () => {
@@ -237,6 +237,21 @@ describe('colCache', () => {
       left: 1,
       bottom: 2,
       right: 2,
+    });
+  });
+
+  describe('encode', () => {
+    it('encodes row and column into an address', () => {
+      expect(colCache.encode(3, 2)).to.equal('B3');
+    });
+
+    it('encodes top, left, bottom, right into a range', () => {
+      expect(colCache.encode(1, 1, 2, 2)).to.equal('A1:B2');
+    });
+
+    it('throws for any other number of arguments', () => {
+      expect(() => colCache.encode(1)).to.throw('Can only encode with 2 or 4 arguments');
+      expect(() => colCache.encode(1, 2, 3)).to.throw('Can only encode with 2 or 4 arguments');
     });
   });
 });

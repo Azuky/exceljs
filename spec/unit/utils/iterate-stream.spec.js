@@ -47,4 +47,23 @@ describe('iterateStream', () => {
     const items = await collect(stream);
     expect(items).to.deep.equal(['x', 'y', 'z']);
   }, 2000);
+
+  it('rejects the consumer with the error when the stream is destroyed mid-iteration', async () => {
+    const stream = new Readable({ objectMode: true, read() {} });
+    stream.push('first');
+    const boom = new Error('stream blew up');
+
+    const items = [];
+    let caught;
+    try {
+      for await (const item of iterateStream(stream)) {
+        items.push(item);
+        setImmediate(() => stream.destroy(boom));
+      }
+    } catch (e) {
+      caught = e;
+    }
+    expect(items).to.deep.equal(['first']);
+    expect(caught).to.equal(boom);
+  }, 2000);
 });

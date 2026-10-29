@@ -1,4 +1,4 @@
-import { configDefaults, defineConfig } from 'vitest/config';
+import { defineConfig } from 'vitest/config';
 
 const shared = {
   globals: true,
@@ -17,8 +17,6 @@ export default defineConfig({
           ...shared,
           name: 'unit',
           include: ['spec/unit/**/*.spec.js'],
-          // zero-byte placeholder: mocha tolerates an empty file, vitest fails it with "No test suite found"
-          exclude: [...configDefaults.exclude, 'spec/unit/utils/encryptor.spec.js'],
         },
       },
       { test: { ...shared, name: 'integration', include: ['spec/integration/**/*.spec.js'] } },

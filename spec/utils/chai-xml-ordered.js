@@ -11,6 +11,10 @@
  *  - text chunks and CDATA of one element are concatenated
  * The one difference: xml2js groups children by tag name, so it cannot see the order
  * of siblings. Here children are compared as an ordered list.
+ *
+ * Deliberate, stricter differences from chai-xml (not bugs):
+ *  - `.not.valid()` passes for malformed XML (chai-xml's negation is broken)
+ *  - a document with more than one root element is rejected as invalid
  */
 const sax = require('sax');
 
@@ -61,12 +65,15 @@ function parse(xml) {
   return root.children[0];
 }
 
+const names = (n) => n.children.map((c) => c.name).join(',');
+
 function normalizeText(node, trim) {
   let { text } = node;
   if (!node.cdata && /^\s*$/.test(text)) {
     // xml2js drops whitespace-only text, but keeps it for a bare leaf element
+    // (and then it is not trimmed either, even under .deep)
     const bare = !node.children.length && !Object.keys(node.attrs).length;
-    if (!bare) text = '';
+    return bare ? text : '';
   }
   return trim ? text.trim() : text;
 }
@@ -74,29 +81,26 @@ function normalizeText(node, trim) {
 // Returns a description of the first difference, or null when equal.
 function diff(a, b, path, trim) {
   if (a.name !== b.name) return `${path}: tag <${a.name}> !== <${b.name}>`;
-  const here = path;
   const ak = Object.keys(a.attrs).sort();
   const bk = Object.keys(b.attrs).sort();
   if (ak.join('\u0000') !== bk.join('\u0000')) {
-    return `${here}: attributes [${ak}] !== [${bk}]`;
+    return `${path}: attributes [${ak}] !== [${bk}]`;
   }
   for (const k of ak) {
     if (a.attrs[k] !== b.attrs[k]) {
-      return `${here}@${k}: ${JSON.stringify(a.attrs[k])} !== ${JSON.stringify(b.attrs[k])}`;
+      return `${path}@${k}: ${JSON.stringify(a.attrs[k])} !== ${JSON.stringify(b.attrs[k])}`;
     }
   }
   const at = normalizeText(a, trim);
   const bt = normalizeText(b, trim);
-  if (at !== bt) return `${here}: text ${JSON.stringify(at)} !== ${JSON.stringify(bt)}`;
+  if (at !== bt) return `${path}: text ${JSON.stringify(at)} !== ${JSON.stringify(bt)}`;
   if (a.children.length !== b.children.length) {
-    const names = (n) => n.children.map((c) => c.name).join(',');
-    return `${here}: children [${names(a)}] !== [${names(b)}]`;
+    return `${path}: children [${names(a)}] !== [${names(b)}]`;
   }
   for (let i = 0; i < a.children.length; i++) {
-    const child = `${here}/${a.children[i].name}[${i}]`;
+    const child = `${path}/${a.children[i].name}[${i}]`;
     if (a.children[i].name !== b.children[i].name) {
-      const names = (n) => n.children.map((c) => c.name).join(',');
-      return `${here}: child #${i} <${a.children[i].name}> !== <${b.children[i].name}> (order matters); actual [${names(a)}] vs expected [${names(b)}]`;
+      return `${path}: child #${i} <${a.children[i].name}> !== <${b.children[i].name}> (order matters); actual [${names(a)}] vs expected [${names(b)}]`;
     }
     const d = diff(a.children[i], b.children[i], child, trim);
     if (d) return d;

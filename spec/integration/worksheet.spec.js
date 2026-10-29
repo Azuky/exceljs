@@ -1060,5 +1060,35 @@ describe('Worksheet', () => {
         });
       });
     }
+
+    it('writes and reads back hidden rows and columns', async () => {
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet('hide');
+      ws.getCell('A1').value = 'a1';
+      ws.getCell('B1').value = 'b1';
+      ws.getCell('C1').value = 'c1';
+      ws.getCell('A2').value = 'a2';
+      ws.getCell('B2').value = 'b2';
+      ws.getCell('C2').value = 'c2';
+      ws.getCell('A3').value = 'a3';
+      ws.getCell('B3').value = 'b3';
+      ws.getCell('C3').value = 'c3';
+      ws.getRow(2).hidden = true;
+      ws.getColumn(2).hidden = true;
+
+      const buffer = await wb.xlsx.writeBuffer();
+      const wb2 = new ExcelJS.Workbook();
+      await wb2.xlsx.load(buffer);
+      const ws2 = wb2.getWorksheet('hide');
+
+      expect(ws2.getRow(1).hidden).to.equal(false);
+      expect(ws2.getRow(2).hidden).to.equal(true);
+      expect(ws2.getRow(3).hidden).to.equal(false);
+      expect(ws2.getColumn(1).hidden).to.equal(false);
+      expect(ws2.getColumn(2).hidden).to.equal(true);
+      expect(ws2.getColumn(3).hidden).to.equal(false);
+      // hiding keeps the content
+      expect(ws2.getCell('B2').value).to.equal('b2');
+    });
   });
 });

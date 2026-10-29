@@ -64,4 +64,78 @@ describe('utils', () => {
       expect(dateConverted).to.deep.equal(myDate);
     });
   });
+
+  describe('xmlDecode', () => {
+    it('decodes the five predefined entities', () => {
+      expect(utils.xmlDecode('&lt;a&amp;b&gt;&apos;&quot;')).to.equal('<a&b>\'"');
+    });
+
+    it('leaves unknown entities untouched', () => {
+      expect(utils.xmlDecode('&unknown; &nbsp; x')).to.equal('&unknown; &nbsp; x');
+    });
+
+    it('decodes only one level, so double-encoded entities stay encoded', () => {
+      expect(utils.xmlDecode('&amp;lt;')).to.equal('&lt;');
+    });
+
+    it('is the inverse of xmlEncode for text with special characters', () => {
+      const text = 'a < b && "c" > \'d\'';
+      expect(utils.xmlDecode(utils.xmlEncode(text))).to.equal(text);
+    });
+  });
+
+  describe('getRelsPath', () => {
+    it('builds the rels path of a part', () => {
+      expect(utils.getRelsPath('xl/worksheets/sheet1.xml')).to.equal('xl/worksheets/_rels/sheet1.xml.rels');
+    });
+
+    it('handles a part at the root', () => {
+      expect(utils.getRelsPath('/workbook.xml')).to.equal('/_rels/workbook.xml.rels');
+    });
+  });
+
+  describe('promiseImmediate', () => {
+    it('resolves with the given value on a later tick', async () => {
+      let ran = false;
+      const promise = utils.promiseImmediate('value');
+      promise.then(() => {
+        ran = true;
+      });
+      expect(ran).to.equal(false);
+      expect(await promise).to.equal('value');
+    });
+  });
+
+  describe('toSortedArray', () => {
+    it('sorts numbers numerically', () => {
+      expect(utils.toSortedArray([10, 9, 1])).to.deep.equal([1, 9, 10]);
+    });
+
+    it('sorts other values as strings and accepts any iterable', () => {
+      expect(utils.toSortedArray(new Set(['b', 'a', 'c']))).to.deep.equal(['a', 'b', 'c']);
+      expect(utils.toSortedArray([10, 9, 'x'])).to.deep.equal([10, 9, 'x']);
+    });
+
+    it('does not modify its input', () => {
+      const input = [3, 1, 2];
+      utils.toSortedArray(input);
+      expect(input).to.deep.equal([3, 1, 2]);
+    });
+  });
+
+  describe('range', () => {
+    it('counts up to, but excluding, stop', () => {
+      expect([...utils.range(0, 3)]).to.deep.equal([0, 1, 2]);
+    });
+
+    it('supports a step and a negative step', () => {
+      expect([...utils.range(0, 10, 4)]).to.deep.equal([0, 4, 8]);
+      expect([...utils.range(3, 0, -1)]).to.deep.equal([3, 2, 1]);
+    });
+
+    it('is empty when stop is not reachable in the step direction', () => {
+      expect([...utils.range(3, 0)]).to.deep.equal([]);
+      expect([...utils.range(0, 3, -1)]).to.deep.equal([]);
+    });
+  });
 });

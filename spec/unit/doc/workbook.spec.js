@@ -303,4 +303,125 @@ describe('Workbook', () => {
       expect(ws.getRow(3).font).to.deep.equal(testUtils.styles.fonts.broadwayRedOutline20);
     });
   });
+
+  describe('removeWorksheet', () => {
+    function threeSheets() {
+      const wb = new Excel.Workbook();
+      wb.addWorksheet('one');
+      wb.addWorksheet('two');
+      wb.addWorksheet('three');
+      return wb;
+    }
+
+    it('removes a worksheet by id', () => {
+      const wb = threeSheets();
+      wb.removeWorksheet(2);
+      expect(wb.getWorksheet(2)).to.equal(undefined);
+      expect(wb.getWorksheet('two')).to.equal(undefined);
+      expect(wb.worksheets.map((ws) => ws.name)).to.deep.equal(['one', 'three']);
+    });
+
+    it('removes a worksheet by name', () => {
+      const wb = threeSheets();
+      wb.removeWorksheet('three');
+      expect(wb.worksheets.map((ws) => ws.name)).to.deep.equal(['one', 'two']);
+      expect(wb.worksheets.length).to.equal(2);
+    });
+
+    it('ignores an unknown id or name', () => {
+      const wb = threeSheets();
+      expect(() => wb.removeWorksheet('nope')).not.to.throw();
+      expect(() => wb.removeWorksheet(99)).not.to.throw();
+      expect(wb.worksheets.length).to.equal(3);
+    });
+
+    it('destroy removes the worksheet from its workbook', () => {
+      const wb = threeSheets();
+      wb.getWorksheet('one').destroy();
+      expect(wb.worksheets.map((ws) => ws.name)).to.deep.equal(['two', 'three']);
+      expect(wb.getWorksheet(1)).to.equal(undefined);
+    });
+
+    it('reuses the freed id for the next worksheet, which is listed last', () => {
+      const wb = threeSheets();
+      wb.removeWorksheet(2);
+      const added = wb.addWorksheet('four');
+      expect(added.id).to.equal(2);
+      expect(wb.getWorksheet(2)).to.equal(added);
+      expect(wb.worksheets.map((ws) => ws.name)).to.deep.equal(['one', 'three', 'four']);
+    });
+
+    it('gives the next id after the last one when nothing was removed', () => {
+      const wb = threeSheets();
+      expect(wb.nextId).to.equal(4);
+      expect(new Excel.Workbook().nextId).to.equal(1);
+    });
+
+    it('lets eachSheet skip removed worksheets', () => {
+      const wb = threeSheets();
+      wb.removeWorksheet(1);
+      const ids = [];
+      wb.eachSheet((ws, id) => ids.push(id));
+      expect(ids).to.deep.equal([2, 3]);
+    });
+  });
+
+  describe('deprecated tab colour arguments', () => {
+    let trace;
+    beforeEach(() => {
+      trace = vi.spyOn(console, 'trace').mockImplementation(() => {});
+    });
+    afterEach(() => {
+      trace.mockRestore();
+    });
+
+    it('accepts an argb string as the second argument', () => {
+      const ws = new Excel.Workbook().addWorksheet('a', 'FF00FF00');
+      expect(ws.properties.tabColor).to.deep.equal({ argb: 'FF00FF00' });
+      expect(trace).toHaveBeenCalledTimes(1);
+    });
+
+    it('accepts an {argb} object as the second argument', () => {
+      const ws = new Excel.Workbook().addWorksheet('b', { argb: 'FF00FF00' });
+      expect(ws.properties.tabColor).to.deep.equal({ argb: 'FF00FF00' });
+      expect(trace).toHaveBeenCalledTimes(1);
+    });
+
+    it('accepts {theme} and {indexed} objects as the second argument', () => {
+      const wb = new Excel.Workbook();
+      expect(wb.addWorksheet('c', { theme: 2 }).properties.tabColor).to.deep.equal({ theme: 2 });
+      expect(wb.addWorksheet('d', { indexed: 5 }).properties.tabColor).to.deep.equal({ indexed: 5 });
+      expect(trace).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not warn for the supported properties.tabColor option', () => {
+      const ws = new Excel.Workbook().addWorksheet('e', { properties: { tabColor: { argb: 'FF0000FF' } } });
+      expect(ws.properties.tabColor).to.deep.equal({ argb: 'FF0000FF' });
+      expect(trace).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('lookups and themes', () => {
+    it('getWorksheet returns undefined for an id that is neither a number nor a string', () => {
+      const wb = new Excel.Workbook();
+      wb.addWorksheet('first');
+      expect(wb.getWorksheet({})).to.equal(undefined);
+      expect(wb.getWorksheet(null)).to.equal(undefined);
+    });
+
+    it('getWorksheet without an id returns the first worksheet', () => {
+      const wb = new Excel.Workbook();
+      expect(wb.getWorksheet()).to.equal(undefined);
+      const first = wb.addWorksheet('first');
+      wb.addWorksheet('second');
+      expect(wb.getWorksheet()).to.equal(first);
+    });
+
+    it('clearThemes drops loaded themes', () => {
+      const wb = new Excel.Workbook();
+      wb._themes = { theme1: '<xml/>' };
+      wb.clearThemes();
+      expect(wb._themes).to.equal(undefined);
+    });
+  });
 });
