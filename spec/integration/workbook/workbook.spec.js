@@ -928,6 +928,44 @@ describe('Workbook', () => {
 
       expect(wb2.getWorksheet('opts').getCell('A1').font).to.deep.equal({ bold: true });
     });
+
+    // cell-xform decodes t="str" text (and string formula results) that the XML parser already decoded
+    describe('literal entity text', () => {
+      const roundTrip = async (value) => {
+        const wb = new ExcelJS.Workbook();
+        wb.addWorksheet('entities').getCell('A1').value = value;
+        const wb2 = new ExcelJS.Workbook();
+        await wb2.xlsx.load(await wb.xlsx.writeBuffer({ useSharedStrings: false }));
+        return wb2.getWorksheet('entities').getCell('A1').value;
+      };
+
+      knownBug(
+        'keeps a string containing an entity reference',
+        async () => {
+          // the streaming writer emits plain strings as t="str" cells
+          const filename = './spec/out/wb-entity-str.test.xlsx';
+          const writer = new ExcelJS.stream.xlsx.WorkbookWriter({ filename });
+          const ws = writer.addWorksheet('entities');
+          ws.addRow(['Tom &amp; Jerry']).commit();
+          ws.commit();
+          await writer.commit();
+
+          const wb2 = new ExcelJS.Workbook();
+          await wb2.xlsx.readFile(filename);
+          expect(wb2.getWorksheet('entities').getCell('A1').value).to.equal('Tom &amp; Jerry');
+        },
+        /expected 'Tom & Jerry' to equal 'Tom &amp; Jerry'/,
+      );
+
+      knownBug(
+        'keeps a string formula result containing an entity reference',
+        async () => {
+          const value = await roundTrip({ formula: '"R &amp; D"', result: 'R &amp; D' });
+          expect(value.result).to.equal('R &amp; D');
+        },
+        /expected 'R & D' to equal 'R &amp; D'/,
+      );
+    });
   });
 
   describe('Sheet Views', () => {

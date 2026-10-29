@@ -244,8 +244,8 @@ describe('WorkbookReader (streaming)', () => {
       expect(worksheetReader.hyperlinks).to.deep.equal({ B1: { ref: 'B1', rId: 'rId1' } });
     });
 
-    it('hyperlinks:ignore (default) emits nothing and keeps nothing', async () => {
-      const reader = new WorkbookReader(filename);
+    it('hyperlinks:ignore emits nothing and keeps nothing', async () => {
+      const reader = new WorkbookReader(filename, { hyperlinks: 'ignore' });
       let emitted = 0;
       let worksheetReader;
       reader.on('hyperlinks', () => emitted++);
@@ -386,6 +386,24 @@ describe('WorkbookReader (streaming)', () => {
         expect(sheet.rows[0].values[1]).to.equal('Tom &amp; Jerry');
       },
       /expected 'Tom & Jerry' to equal 'Tom &amp; Jerry'/,
+    );
+  });
+
+  describe('string formula results', () => {
+    // same double decoding as above, on the formula result branch
+    knownBug(
+      'does not decode entities twice in a string formula result',
+      async () => {
+        const wb = new ExcelJS.stream.xlsx.WorkbookWriter({ filename: file('formula-entity') });
+        const ws = wb.addWorksheet('Sheet');
+        ws.addRow([{ formula: '"R &amp; D"', result: 'R &amp; D' }]).commit();
+        ws.commit();
+        await wb.commit();
+
+        const [sheet] = await readSheets(file('formula-entity'), { sharedStrings: 'ignore' });
+        expect(sheet.rows[0].values[1].result).to.equal('R &amp; D');
+      },
+      /expected 'R & D' to equal 'R &amp; D'/,
     );
   });
 
@@ -558,8 +576,8 @@ describe('WorkbookReader (streaming)', () => {
       expect(entries).to.deep.include({ type: 'worksheet', id: '1' });
     });
 
-    it('entries:ignore (default) emits no entries', async () => {
-      const reader = new WorkbookReader(filename);
+    it('entries:ignore emits no entries', async () => {
+      const reader = new WorkbookReader(filename, { entries: 'ignore' });
       let entries = 0;
       reader.on('entry', () => entries++);
       await run(reader);
