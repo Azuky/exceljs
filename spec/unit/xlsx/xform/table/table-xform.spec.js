@@ -127,7 +127,8 @@ const expectations = [
         },
       },
       parse: {
-        reason: /expected \{ name: 'Styled'.*to deeply equal/,
+        reason:
+          /actual: .*\{"name":"Bold","filterButton":true\}\]\n?[\s\S]*expected: .*\{"filterButton":true,"name":"Bold","dxfId":"0"\}\]/,
         // dataDxfId is not read: put the value of the styled column back
         neutralise(model) {
           model.columns[1].dxfId = '0';

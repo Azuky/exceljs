@@ -13,11 +13,10 @@ const expectations = [
     xml: '<brk id="2" max="3" min="1" man="1"/>',
     parsedModel: { id: 2, max: 3, min: 1, man: 1 },
     // known bug: parseOpen reads the (non-existent) `ref` attribute of <brk> instead of id/min/max/man
-    // nothing of the model survives the bug, so the whole model is put back
+    // nothing of the result survives the bug: no normal parse test, only the known deviation
     knownDeviations: {
       parse: {
-        reason: /expected undefined to deeply equal/,
-        neutralise: () => ({ id: 2, max: 3, min: 1, man: 1 }),
+        reason: /actual: undefined\nexpected: \{"id":2,"max":3,"min":1,"man":1\}/,
       },
     },
     tests: ['prepare', 'render', 'renderIn', 'parse'],

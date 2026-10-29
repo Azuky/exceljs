@@ -27,8 +27,9 @@ function getExpectation(expectation, name) {
 //     render: { reason: /pinned failure message/, neutralise: (root) => { ...undo the deviation... } },
 //     parse: { reason: /.../, neutralise: (model) => model-with-the-deviation-undone },
 //   }
+// Leave `neutralise` out when nothing of the result survives the bug.
 // `render` also covers `renderIn`, `parse` also covers `parseIn`. For such a kind two tests exist:
-//  1. the normal test, run on the actual output after `neutralise` has undone exactly the
+//  1. (only when `neutralise` is given) the normal test, run on the actual output after `neutralise` has undone exactly the
 //     deviation (render: edits the parsed xml tree, see spec/utils/xml-tree.js; parse: returns the
 //     model), so everything else stays strictly compared;
 //  2. a known-bug test: the raw comparison must still fail with `reason`. It goes red when the
@@ -47,7 +48,8 @@ function itWithDeviation(expectation, kind, title, run) {
     it(title, () => run());
     return;
   }
-  it(title, () => run(deviation.neutralise));
+  // without `neutralise` nothing of the result survives the bug: only the known-deviation test exists
+  if (deviation.neutralise) it(title, () => run(deviation.neutralise));
   it(
     `${title} (known deviation)`,
     expectKnownFailure(() => run(), deviation.reason),
@@ -62,6 +64,16 @@ const parseXml = (xform, xml) =>
     stream.end();
     xform.parse(parseSax(stream)).then(resolve).catch(reject);
   });
+
+// deep equal whose failure message also carries both models, so a deviation `reason` can pin the difference
+const expectModel = (actual, expected) => {
+  try {
+    expect(actual).to.deep.equal(expected);
+  } catch (e) {
+    e.message = `${e.message}\nactual: ${JSON.stringify(actual)}\nexpected: ${JSON.stringify(expected)}`;
+    throw e;
+  }
+};
 
 const neutraliseXml = (xml, neutralise) => (neutralise ? xmlTree.transform(xml, neutralise) : xml);
 
@@ -166,7 +178,7 @@ const its = {
       // eliminate the undefined
       const clone = cloneDeep(model, false);
       if (neutralise) clone[childXform.tag] = neutralise(clone[childXform.tag]);
-      expect(clone).to.deep.equal(result);
+      expectModel(clone, result);
     });
   },
 
@@ -179,7 +191,7 @@ const its = {
       // eliminate the undefined
       let clone = cloneDeep(model, false);
       if (neutralise) clone = neutralise(clone);
-      expect(clone).to.deep.equal(result);
+      expectModel(clone, result);
     });
   },
 

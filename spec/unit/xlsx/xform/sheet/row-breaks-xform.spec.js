@@ -18,14 +18,10 @@ const expectations = [
       { id: 20, max: 16383, man: 1 },
     ],
     // known bug: the brk children yield no model, so the list stays empty (see PageBreaksXform)
-    // nothing of the list survives the bug, so the whole list is put back
+    // nothing of the result survives the bug: no normal parse test, only the known deviation
     knownDeviations: {
       parse: {
-        reason: /expected \[\] to deeply equal/,
-        neutralise: () => [
-          { id: 10, max: 16383, man: 1 },
-          { id: 20, max: 16383, man: 1 },
-        ],
+        reason: /actual: \[\]\nexpected: \[\{"id":10,"max":16383,"man":1\},\{"id":20/,
       },
     },
     tests: ['render', 'renderIn', 'parse'],
