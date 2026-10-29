@@ -5,8 +5,7 @@
     "moduleResolution": "nodenext",
     "target": "es2023",
     "noEmit": true,
-    "skipLibCheck": true,
-    "types": ["node", "vitest/globals"]
+    "types": ["node"]
   },
   "include": ["spec/typescript/**/*"]
 }

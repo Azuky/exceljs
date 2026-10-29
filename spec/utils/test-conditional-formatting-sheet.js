@@ -18,8 +18,8 @@ const self = {
 
   checkSheet(wb) {
     const ws = wb.getWorksheet('conditional-formatting');
-    expect(ws).to.not.be.undefined();
-    expect(ws.conditionalFormattings).to.not.be.undefined();
+    expect(ws).to.not.be.undefined;
+    expect(ws.conditionalFormattings).to.not.be.undefined;
     (ws.conditionalFormattings && ws.conditionalFormattings).forEach((item) => {
       const type = item.rules && item.rules[0].type;
       const conditionalFormatting = self.getConditionalFormatting(type);

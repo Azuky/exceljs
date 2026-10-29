@@ -121,8 +121,8 @@ describe('Workbook', () => {
           return wb2.xlsx.readFile(TEST_XLSX_FILE_NAME);
         })
         .then((wb2) => {
-          expect(wb2.getWorksheet('Hello, World!')).to.be.ok();
-          expect(wb2.getWorksheet('This & That')).to.be.ok();
+          expect(wb2.getWorksheet('Hello, World!')).to.be.ok;
+          expect(wb2.getWorksheet('This & That')).to.be.ok;
         });
     });
 
@@ -169,7 +169,7 @@ describe('Workbook', () => {
         .then((wb2) => {
           const ws2 = wb2.getWorksheet('printHeader');
           expect(ws2.pageSetup.printTitlesRow).to.equal('1:2');
-          expect(ws2.pageSetup.printTitlesColumn).to.be.undefined();
+          expect(ws2.pageSetup.printTitlesColumn).to.be.undefined;
         });
     });
     it('printTitlesColumn', () => {
@@ -196,7 +196,7 @@ describe('Workbook', () => {
         })
         .then((wb2) => {
           const ws2 = wb2.getWorksheet('printColumn');
-          expect(ws2.pageSetup.printTitlesRow).to.be.undefined();
+          expect(ws2.pageSetup.printTitlesRow).to.be.undefined;
           expect(ws2.pageSetup.printTitlesColumn).to.equal('A:B');
         });
     });
@@ -428,7 +428,7 @@ describe('Workbook', () => {
         .then((wb2) => {
           for (i = 1; i <= numSheets; i++) {
             const ws2 = wb2.getWorksheet(`sheet${i}`);
-            expect(ws2).to.be.ok();
+            expect(ws2).to.be.ok;
             expect(ws2.getCell('A1').value).to.equal(i);
           }
         });
@@ -619,7 +619,7 @@ describe('Workbook', () => {
               expect(ws2.getCell('A2').style).to.equal(ws2.getCell('A1').style);
               expect(ws2.getCell('A3').value).to.equal('OneInfo');
               expect(ws2.getCell('A3').style).to.equal(ws2.getCell('A1').style);
-              expect(ws2.getCell('A4').value).to.be.null();
+              expect(ws2.getCell('A4').value).to.be.null;
             });
         });
       });
@@ -886,7 +886,7 @@ describe('Workbook', () => {
         })
         .then((wb2) => {
           const ws2 = wb2.getWorksheet('frozen');
-          expect(ws2).to.be.ok();
+          expect(ws2).to.be.ok;
           expect(ws2.getCell('A1').value).to.equal('Let it Snow!');
           expect(ws2.views).to.deep.equal([
             {
@@ -963,7 +963,7 @@ describe('Workbook', () => {
         })
         .then((wb2) => {
           const ws2 = wb2.getWorksheet('split');
-          expect(ws2).to.be.ok();
+          expect(ws2).to.be.ok;
           expect(ws2.getCell('A1').value).to.equal('Do the splits!');
           expect(ws2.views).to.deep.equal([
             {

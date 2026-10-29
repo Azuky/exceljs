@@ -33,7 +33,7 @@ describe('Workbook', () => {
         })
         .then(() => {
           ws2 = wb2.getWorksheet('blort');
-          expect(ws2).to.not.be.undefined();
+          expect(ws2).to.not.be.undefined;
 
           return fsReadFileAsync(IMAGE_FILENAME);
         })
@@ -71,7 +71,7 @@ describe('Workbook', () => {
         })
         .then(() => {
           ws2 = wb2.getWorksheet('blort');
-          expect(ws2).to.not.be.undefined();
+          expect(ws2).to.not.be.undefined;
 
           expect(ws.getCell('A1').value).to.equal('Hello, World!');
           expect(ws.getCell('A2').value).to.deep.equal({
@@ -121,7 +121,7 @@ describe('Workbook', () => {
         })
         .then(() => {
           ws2 = wb2.getWorksheet('blort');
-          expect(ws2).to.not.be.undefined();
+          expect(ws2).to.not.be.undefined;
 
           return fsReadFileAsync(IMAGE_FILENAME);
         })
@@ -162,7 +162,7 @@ describe('Workbook', () => {
         })
         .then(() => {
           ws2 = wb2.getWorksheet('blort');
-          expect(ws2).to.not.be.undefined();
+          expect(ws2).to.not.be.undefined;
 
           return fsReadFileAsync(IMAGE_FILENAME);
         })
@@ -209,7 +209,7 @@ describe('Workbook', () => {
         })
         .then(() => {
           ws2 = wb2.getWorksheet('blort');
-          expect(ws2).to.not.be.undefined();
+          expect(ws2).to.not.be.undefined;
 
           return fsReadFileAsync(IMAGE_FILENAME);
         })
@@ -267,7 +267,7 @@ describe('Workbook', () => {
         })
         .then(() => {
           ws2 = wb2.getWorksheet('blort');
-          expect(ws2).to.not.be.undefined();
+          expect(ws2).to.not.be.undefined;
 
           return fsReadFileAsync(IMAGE_FILENAME);
         })

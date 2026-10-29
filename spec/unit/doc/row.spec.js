@@ -9,19 +9,19 @@ describe('Row', () => {
 
     const row1 = sheet.getRow(1);
     expect(row1.number).to.equal(1);
-    expect(row1.hasValues).to.not.be.ok();
+    expect(row1.hasValues).to.not.be.ok;
 
     const a1 = row1.getCell(1);
     expect(a1.address).to.equal('A1');
     expect(a1.type).to.equal(Enums.ValueType.Null);
-    expect(row1.hasValues).to.not.be.ok();
+    expect(row1.hasValues).to.not.be.ok;
 
     expect(row1.getCell('A')).to.equal(a1);
     expect(row1.getCell('name')).to.equal(a1);
 
     a1.value = 5;
     expect(a1.type).to.equal(Enums.ValueType.Number);
-    expect(row1.hasValues).to.be.ok();
+    expect(row1.hasValues).to.be.ok;
 
     const b1 = row1.getCell(2);
     expect(b1.address).to.equal('B1');
@@ -57,7 +57,7 @@ describe('Row', () => {
     expect(count).to.equal(3);
 
     const row2 = sheet.getRow(2);
-    expect(row2.dimensions).to.be.null();
+    expect(row2.dimensions).to.be.null;
   });
 
   it('stores values by whole row', () => {
@@ -74,7 +74,7 @@ describe('Row', () => {
     row1.values = [5, 'Hello, World!', null];
     expect(row1.getCell(1).value).to.equal(5);
     expect(row1.getCell(2).value).to.equal('Hello, World!');
-    expect(row1.getCell(3).value).to.be.null();
+    expect(row1.getCell(3).value).to.be.null;
     expect(row1.values).to.deep.equal([, 5, 'Hello, World!']);
 
     // set values by sparse array
@@ -84,7 +84,7 @@ describe('Row', () => {
     values[5] = now;
     row1.values = values;
     expect(row1.getCell(1).value).to.equal(7);
-    expect(row1.getCell(2).value).to.be.null();
+    expect(row1.getCell(2).value).to.be.null;
     expect(row1.getCell(3).value).to.equal('Not Null!');
     expect(row1.getCell(5).type).to.equal(Enums.ValueType.Date);
     expect(row1.values).to.deep.equal([, 7, , 'Not Null!', , now]);
@@ -98,7 +98,7 @@ describe('Row', () => {
     expect(row1.getCell(1).value).to.equal(9);
     expect(row1.getCell(2).value).to.equal('Dobbie');
     expect(row1.getCell(3).type).to.equal(Enums.ValueType.Date);
-    expect(row1.getCell(5).value).to.be.null();
+    expect(row1.getCell(5).value).to.be.null;
     expect(row1.values).to.deep.equal([, 9, 'Dobbie', now]);
   });
 
@@ -140,9 +140,9 @@ describe('Row', () => {
       expect(row.getCell(1).value).to.equal(1);
       expect(row.getCell(2).value).to.equal(2);
       expect(row.getCell(3).value).to.equal(3);
-      expect(row.getCell(4).value).to.be.null();
-      expect(row.getCell(5).value).to.be.null();
-      expect(row.getCell(6).value).to.be.null();
+      expect(row.getCell(4).value).to.be.null;
+      expect(row.getCell(5).value).to.be.null;
+      expect(row.getCell(6).value).to.be.null;
     });
 
     it('remove almost to end', () => {
@@ -161,8 +161,8 @@ describe('Row', () => {
       expect(row.getCell(2).value).to.equal(2);
       expect(row.getCell(3).value).to.equal(3);
       expect(row.getCell(4).value).to.equal(6);
-      expect(row.getCell(5).value).to.be.null();
-      expect(row.getCell(6).value).to.be.null();
+      expect(row.getCell(5).value).to.be.null;
+      expect(row.getCell(6).value).to.be.null;
     });
 
     it('remove past end', () => {
@@ -180,11 +180,11 @@ describe('Row', () => {
       expect(row.getCell(1).value).to.equal(1);
       expect(row.getCell(2).value).to.equal(2);
       expect(row.getCell(3).value).to.equal(3);
-      expect(row.getCell(4).value).to.be.null();
-      expect(row.getCell(5).value).to.be.null();
-      expect(row.getCell(6).value).to.be.null();
-      expect(row.getCell(7).value).to.be.null();
-      expect(row.getCell(8).value).to.be.null();
+      expect(row.getCell(4).value).to.be.null;
+      expect(row.getCell(5).value).to.be.null;
+      expect(row.getCell(6).value).to.be.null;
+      expect(row.getCell(7).value).to.be.null;
+      expect(row.getCell(8).value).to.be.null;
     });
 
     it('remove and insert fewer', () => {
@@ -274,7 +274,7 @@ describe('Row', () => {
     });
 
     const row2 = sheet.getRow(2);
-    expect(row2.model).to.be.null();
+    expect(row2.model).to.be.null;
 
     const row3 = sheet.getRow(3);
     row3.getCell(1).value = 5;

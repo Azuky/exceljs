@@ -53,7 +53,7 @@ describe('Workbook', () => {
         const buffer = await fsReadFileAsync(TEST_XLSX_FILEPATH);
         const zip = await JSZip.loadAsync(buffer);
         for (const filepath of PIVOT_TABLE_FILEPATHS) {
-          expect(zip.files[filepath]).to.not.be.undefined();
+          expect(zip.files[filepath]).to.not.be.undefined;
         }
       });
     });
@@ -70,7 +70,7 @@ describe('Workbook', () => {
         const buffer = await fsReadFileAsync(TEST_XLSX_FILEPATH);
         const zip = await JSZip.loadAsync(buffer);
         for (const filepath of PIVOT_TABLE_FILEPATHS) {
-          expect(zip.files[filepath]).to.be.undefined();
+          expect(zip.files[filepath]).to.be.undefined;
         }
       });
     });

@@ -12,7 +12,7 @@ describe('github issues', () => {
       locked: true,
     };
 
-    expect(sheet.protect).to.exist();
+    expect(sheet.protect).to.exist;
 
     sheet.protect('password', {
       spinCount: 1,

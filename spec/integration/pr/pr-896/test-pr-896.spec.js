@@ -51,7 +51,7 @@ describe('pr related issues', () => {
         })
         .then((wb2) => {
           const ws2 = wb2.getWorksheet('sheet1');
-          expect(ws2).to.not.be.undefined();
+          expect(ws2).to.not.be.undefined;
           expect(ws2.getCell('A1').value).to.deep.equal(TEST_VALUE);
         });
     });

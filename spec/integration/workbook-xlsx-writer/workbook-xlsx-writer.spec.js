@@ -258,7 +258,7 @@ describe('WorkbookWriter', () => {
         .then((wb2) => {
           for (i = 1; i <= numSheets; i++) {
             const ws2 = wb2.getWorksheet(`sheet${i}`);
-            expect(ws2).to.be.ok();
+            expect(ws2).to.be.ok;
             expect(ws2.getCell('A1').value).to.equal(i);
           }
         });
@@ -568,7 +568,7 @@ describe('WorkbookWriter', () => {
 
       // verify that rules from generated file contain styles with valid numFmt
       cf2.rules.forEach((rule) => {
-        expect(rule.style.numFmt).to.exist();
+        expect(rule.style.numFmt).to.exist;
         expect(rule.style.numFmt.id).to.be.a('number');
         expect(rule.style.numFmt.formatCode).to.be.a('string');
       });

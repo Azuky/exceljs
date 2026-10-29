@@ -13,7 +13,7 @@ describe('StreamBuf', () => {
     const stream = new StreamBuf();
     stream.write('Hello, World!');
     const chunk = stream.read();
-    expect(chunk instanceof Buffer).to.be.ok();
+    expect(chunk instanceof Buffer).to.be.ok;
     expect(chunk.toString('UTF8')).to.equal('Hello, World!');
   });
 
@@ -23,7 +23,7 @@ describe('StreamBuf', () => {
     strBuf.addText('Hello, World!');
     stream.write(strBuf);
     const chunk = stream.read();
-    expect(chunk instanceof Buffer).to.be.ok();
+    expect(chunk instanceof Buffer).to.be.ok;
     expect(chunk.toString('UTF8')).to.equal('Hello, World!');
   });
 

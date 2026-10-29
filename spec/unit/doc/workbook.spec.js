@@ -290,16 +290,16 @@ describe('Workbook', () => {
 
       for (let i = 1; i <= 2; i++) {
         expect(ws.getCell(`A${i}`).font).to.deep.equal(testUtils.styles.fonts.arialBlackUI14);
-        expect(ws.getCell(`A${i}`).alignment).to.be.undefined();
+        expect(ws.getCell(`A${i}`).alignment).to.be.undefined;
         expect(ws.getCell(`B${i}`).font).to.deep.equal(testUtils.styles.fonts.comicSansUdB16);
-        expect(ws.getCell(`B${i}`).alignment).to.undefined();
+        expect(ws.getCell(`B${i}`).alignment).to.undefined;
         expect(ws.getCell(`C${i}`).fill).to.deep.equal(testUtils.styles.fills.redDarkVertical);
-        expect(ws.getCell(`C${i}`).alignment).to.undefined();
+        expect(ws.getCell(`C${i}`).alignment).to.undefined;
       }
 
       expect(ws.getRow(1).numFmt).to.equal(testUtils.styles.numFmts.numFmt1);
       expect(ws.getRow(2).numFmt).to.equal(testUtils.styles.numFmts.numFmt1);
-      expect(ws.getRow(3).numFmt).to.be.undefined();
+      expect(ws.getRow(3).numFmt).to.be.undefined;
       expect(ws.getRow(3).font).to.deep.equal(testUtils.styles.fonts.broadwayRedOutline20);
     });
   });

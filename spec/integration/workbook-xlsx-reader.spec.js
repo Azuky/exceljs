@@ -232,7 +232,7 @@ describe('WorkbookReader', () => {
           },
         )
         .then(() => {
-          expect(unhandledRejection).to.be.undefined();
+          expect(unhandledRejection).to.be.undefined;
         });
     });
   });
