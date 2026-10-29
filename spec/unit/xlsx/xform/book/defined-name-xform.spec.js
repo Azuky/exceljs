@@ -41,6 +41,69 @@ const expectations = [
     parsedModel: { name: 'foo', ranges: [] },
     tests: ['parse'],
   },
+  {
+    title: 'Quoted sheet name containing a comma',
+    create() {
+      return new DefinedNameXform();
+    },
+    xml: `<definedName name="n">'My, Sheet'!$A$1:$B$2</definedName>`,
+    parsedModel: { name: 'n', ranges: ["'My, Sheet'!$A$1:$B$2"] },
+    tests: ['parse'],
+  },
+  {
+    title: 'Several ranges, one with a quoted comma',
+    create() {
+      return new DefinedNameXform();
+    },
+    xml: `<definedName name="n">'My, Sheet'!$A$1:$B$2,Sheet2!$C$3</definedName>`,
+    parsedModel: { name: 'n', ranges: ["'My, Sheet'!$A$1:$B$2", 'Sheet2!$C$3'] },
+    tests: ['parse'],
+  },
+  {
+    title: 'Quoted sheet name without a comma',
+    create() {
+      return new DefinedNameXform();
+    },
+    xml: `<definedName name="n">'My Sheet'!$A$1,Sheet2!$C$3</definedName>`,
+    parsedModel: { name: 'n', ranges: ["'My Sheet'!$A$1", 'Sheet2!$C$3'] },
+    tests: ['parse'],
+  },
+  {
+    title: 'Quoted sheet name with two commas',
+    create() {
+      return new DefinedNameXform();
+    },
+    xml: `<definedName name="n">'a,b,c'!$A$1</definedName>`,
+    parsedModel: { name: 'n', ranges: ["'a,b,c'!$A$1"] },
+    tests: ['parse'],
+  },
+  {
+    title: 'Unbalanced quote is dropped',
+    create() {
+      return new DefinedNameXform();
+    },
+    xml: `<definedName name="n">'Unclosed!$A$1</definedName>`,
+    parsedModel: { name: 'n', ranges: [] },
+    tests: ['parse'],
+  },
+  {
+    title: 'Invalid range among valid ones is dropped',
+    create() {
+      return new DefinedNameXform();
+    },
+    xml: `<definedName name="n">Sheet1!$A$1,NOT A RANGE,Sheet2!$B$2</definedName>`,
+    parsedModel: { name: 'n', ranges: ['Sheet1!$A$1', 'Sheet2!$B$2'] },
+    tests: ['parse'],
+  },
+  {
+    title: 'Sheet scoped name',
+    create() {
+      return new DefinedNameXform();
+    },
+    xml: `<definedName name="n" localSheetId="2">Sheet3!$A$1</definedName>`,
+    parsedModel: { name: 'n', localSheetId: 2, ranges: ['Sheet3!$A$1'] },
+    tests: ['parse'],
+  },
 ];
 
 describe('DefinedNameXform', () => {

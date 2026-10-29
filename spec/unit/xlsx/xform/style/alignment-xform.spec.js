@@ -8,7 +8,8 @@ const expectations = [
     create: () => new AlignmentXform(),
     preparedModel: {},
     xml: '',
-    tests: ['render', 'renderIn'],
+    parsedModel: undefined,
+    tests: ['render', 'renderIn', 'parse'],
   },
   {
     title: 'Top Left',

@@ -10,8 +10,8 @@ const expectations = [
     },
     preparedModel: {},
     xml: '',
-    parsedModel: {},
-    tests: ['render', 'renderIn'],
+    parsedModel: undefined,
+    tests: ['render', 'renderIn', 'parse'],
   },
   {
     title: 'summaryBelow',
@@ -21,7 +21,7 @@ const expectations = [
     preparedModel: { summaryBelow: false },
     xml: '<outlinePr summaryBelow="0"/>',
     parsedModel: { summaryBelow: false },
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
   {
     title: 'summaryRight',
@@ -31,7 +31,7 @@ const expectations = [
     preparedModel: { summaryRight: false },
     xml: '<outlinePr summaryRight="0"/>',
     parsedModel: { summaryRight: false },
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
   {
     title: 'summaryRight',
@@ -41,7 +41,7 @@ const expectations = [
     preparedModel: { summaryBelow: true, summaryRight: false },
     xml: '<outlinePr summaryBelow="1" summaryRight="0"/>',
     parsedModel: { summaryBelow: true, summaryRight: false },
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
 ];
 

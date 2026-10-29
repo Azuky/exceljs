@@ -10,8 +10,8 @@ const expectations = [
     },
     preparedModel: {},
     xml: '',
-    parsedModel: {},
-    tests: ['render', 'renderIn'],
+    parsedModel: undefined,
+    tests: ['render', 'renderIn', 'parse'],
   },
   {
     title: 'Protected (Default)',
@@ -37,7 +37,7 @@ const expectations = [
       objects: false,
       scenarios: false,
     },
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
   {
     title: 'Unprotected (All false)',
@@ -53,7 +53,7 @@ const expectations = [
       selectLockedCells: false,
       selectUnlockedCells: false,
     },
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
   {
     title: 'Protected (All false)',
@@ -79,7 +79,7 @@ const expectations = [
       selectLockedCells: false,
       selectUnlockedCells: false,
     },
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
 ];
 

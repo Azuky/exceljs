@@ -21,7 +21,7 @@ function getExpectation(expectation, name) {
 //  parse:  xml => parsedModel
 //  reconcile: parsedModel => reconciledModel
 
-// An expectation may list test kinds in `knownFailures` (e.g. ['render', 'renderIn']) together
+// An expectation may list test kinds in `knownFailures` (e.g. ['render', 'renderIn', 'parse']) together
 // with `knownFailureMessage` (a RegExp the failure message must match). Those tests pass while
 // broken for exactly that reason, and fail when the bug gets fixed or fails for another reason.
 function itFor(expectation, kind) {
@@ -162,29 +162,32 @@ const its = {
   },
 
   parse(expectation) {
-    it('Parse to Model', () =>
-      new Promise((resolve, reject) => {
-        const xml = getExpectation(expectation, 'xml');
-        const result = getExpectation(expectation, 'parsedModel');
+    itFor(expectation, 'parse')(
+      'Parse to Model',
+      () =>
+        new Promise((resolve, reject) => {
+          const xml = getExpectation(expectation, 'xml');
+          const result = getExpectation(expectation, 'parsedModel');
 
-        const xform = expectation.create();
+          const xform = expectation.create();
 
-        const stream = new PassThrough();
-        stream.write(xml);
-        stream.end();
-        xform
-          .parse(parseSax(stream))
-          .then((model) => {
-            // eliminate the undefined
-            const clone = cloneDeep(model, false);
+          const stream = new PassThrough();
+          stream.write(xml);
+          stream.end();
+          xform
+            .parse(parseSax(stream))
+            .then((model) => {
+              // eliminate the undefined
+              const clone = cloneDeep(model, false);
 
-            // console.log('result', JSON.stringify(clone));
-            // console.log('expect', JSON.stringify(result));
-            expect(clone).to.deep.equal(result);
-            resolve();
-          })
-          .catch(reject);
-      }));
+              // console.log('result', JSON.stringify(clone));
+              // console.log('expect', JSON.stringify(result));
+              expect(clone).to.deep.equal(result);
+              resolve();
+            })
+            .catch(reject);
+        }),
+    );
   },
 
   reconcile(expectation) {
@@ -215,5 +218,14 @@ function testXform(expectations) {
     });
   });
 }
+
+// parses an xml string with the given xform; resolves with its model, rejects with parse errors
+testXform.parseXml = (xform, xml) =>
+  new Promise((resolve, reject) => {
+    const stream = new PassThrough();
+    stream.write(xml);
+    stream.end();
+    xform.parse(parseSax(stream)).then(resolve).catch(reject);
+  });
 
 module.exports = testXform;

@@ -11,7 +11,7 @@ const expectations = [
     preparedModel: { val: '*brandywine*' },
     xml: '<customFilter val="*brandywine*"/>',
     parsedModel: { val: '*brandywine*' },
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
   {
     title: 'custom filter with operator',
@@ -21,7 +21,7 @@ const expectations = [
     preparedModel: { operator: 'notEqual', val: '4' },
     xml: '<customFilter operator="notEqual" val="4"/>',
     parsedModel: { operator: 'notEqual', val: '4' },
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
 ];
 

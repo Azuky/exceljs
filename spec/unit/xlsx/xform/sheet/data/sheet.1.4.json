@@ -3,7 +3,9 @@
   "properties": {
     "defaultRowHeight": 15,
     "dyDescent": 0.25,
-    "tabColor": { "argb": "FF00FF00" },
+    "tabColor": {
+      "argb": "FF00FF00"
+    },
     "outlineLevelCol": 0,
     "outlineLevelRow": 0
   },
@@ -14,11 +16,20 @@
       "showGridLines": true,
       "showRowColHeaders": true,
       "zoomScale": 100,
-      "zoomScaleNormal": 100
+      "zoomScaleNormal": 100,
+      "workbookViewId": 0,
+      "rightToLeft": false
     }
   ],
   "pageSetup": {
-    "margins": { "left": 0.7, "right": 0.7, "top": 0.75, "bottom": 0.75, "header": 0.3, "footer": 0.3 },
+    "margins": {
+      "left": 0.7,
+      "right": 0.7,
+      "top": 0.75,
+      "bottom": 0.75,
+      "header": 0.3,
+      "footer": 0.3
+    },
     "firstPageNumber": 5,
     "useFirstPageNumber": true,
     "usePrinterDefaults": true,
@@ -41,15 +52,30 @@
     "showGridLines": true,
     "showRowColHeaders": true
   },
-  "cols": [{ "min": 2, "max": 2, "width": 10.15625, "bestFit": true }],
+  "cols": [
+    {
+      "min": 2,
+      "max": 2,
+      "width": 10.15625,
+      "bestFit": true
+    }
+  ],
   "rows": [
     {
       "number": 1,
       "min": 1,
       "max": 2,
       "cells": [
-        { "address": "A1", "type": 3, "value": "Text" },
-        { "address": "B1", "type": 3, "value": "I am Text" }
+        {
+          "address": "A1",
+          "type": 3,
+          "value": "Text"
+        },
+        {
+          "address": "B1",
+          "type": 3,
+          "value": "I am Text"
+        }
       ],
       "style": {}
     },
@@ -58,8 +84,16 @@
       "min": 1,
       "max": 2,
       "cells": [
-        { "address": "A2", "type": 3, "value": "Number" },
-        { "address": "B2", "type": 2, "value": 3.14 }
+        {
+          "address": "A2",
+          "type": 3,
+          "value": "Number"
+        },
+        {
+          "address": "B2",
+          "type": 2,
+          "value": 3.14
+        }
       ],
       "style": {}
     },
@@ -68,8 +102,16 @@
       "min": 1,
       "max": 2,
       "cells": [
-        { "address": "A3", "type": 3, "value": "Integer" },
-        { "address": "B3", "type": 2, "value": 5 }
+        {
+          "address": "A3",
+          "type": 3,
+          "value": "Integer"
+        },
+        {
+          "address": "B3",
+          "type": 2,
+          "value": 5
+        }
       ],
       "style": {}
     },
@@ -78,8 +120,19 @@
       "min": 1,
       "max": 2,
       "cells": [
-        { "address": "A4", "type": 3, "value": "Date" },
-        { "address": "B4", "type": 4, "value": "2016-05-17T00:00:00.000Z", "style": { "numFmt": "mm-dd-yy" } }
+        {
+          "address": "A4",
+          "type": 3,
+          "value": "Date"
+        },
+        {
+          "address": "B4",
+          "type": 4,
+          "value": "2016-05-17T00:00:00.000Z",
+          "style": {
+            "numFmt": "mm-dd-yy"
+          }
+        }
       ],
       "style": {}
     },
@@ -88,8 +141,17 @@
       "min": 1,
       "max": 2,
       "cells": [
-        { "address": "A5", "type": 3, "value": "Formula" },
-        { "address": "B5", "type": 6, "formula": "B1", "result": "I am Text" }
+        {
+          "address": "A5",
+          "type": 3,
+          "value": "Formula"
+        },
+        {
+          "address": "B5",
+          "type": 6,
+          "formula": "B1",
+          "result": "I am Text"
+        }
       ],
       "style": {}
     },
@@ -98,7 +160,11 @@
       "min": 1,
       "max": 2,
       "cells": [
-        { "address": "A6", "type": 3, "value": "Hyperlink" },
+        {
+          "address": "A6",
+          "type": 3,
+          "value": "Hyperlink"
+        },
         {
           "address": "B6",
           "type": 5,
@@ -108,7 +174,9 @@
             "font": {
               "underline": true,
               "size": 11,
-              "color": { "theme": 10 },
+              "color": {
+                "theme": 10
+              },
               "name": "Calibri",
               "family": 2,
               "scheme": "minor"
@@ -121,5 +189,19 @@
   ],
   "media": [],
   "tables": [],
-  "conditionalFormattings": []
+  "conditionalFormattings": [],
+  "background": null,
+  "dataValidations": null,
+  "drawing": null,
+  "mergeCells": null,
+  "headerFooter": {
+    "oddHeader": "&C&KCCCCCC&\"Aril\"2 exceljs",
+    "oddFooter": "&Lexceljs&C&F&RPage &P",
+    "firstHeader": "Hello Exceljs",
+    "firstFooter": "Hello World",
+    "differentFirst": true,
+    "differentOddEven": true,
+    "evenHeader": "&C&KCCCCCC&\"Aril\"3 exceljs evenHeader",
+    "evenFooter": "&Lexceljs&C&F&RPage &P evenHeader"
+  }
 }
