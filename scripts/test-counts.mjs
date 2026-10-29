@@ -24,39 +24,53 @@ const stderrTail = (res) => (res.stderr || '').trim().split('\n').slice(-20).joi
 
 const suites = {};
 const tmpDir = mkdtempSync(join(tmpdir(), 'test-counts-'));
-for (const name of SUITES) {
-  const reportFile = join(tmpDir, `${name}.json`);
-  const res = spawnSync(
-    join(root, 'node_modules/.bin/vitest'),
-    ['run', '--project', name, '--reporter=json', `--outputFile=${reportFile}`],
-    {
-      cwd: root,
-      env,
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'pipe'],
-      maxBuffer: 1 << 29,
-    },
-  );
-  if (res.error) {
-    throw new Error(`suite ${name}: failed to run vitest: ${res.error.message}\n${stderrTail(res)}`);
+try {
+  for (const name of SUITES) {
+    const reportFile = join(tmpDir, `${name}.json`);
+    const res = spawnSync(
+      join(root, 'node_modules/.bin/vitest'),
+      ['run', '--project', name, '--reporter=json', `--outputFile=${reportFile}`],
+      {
+        cwd: root,
+        env,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'pipe'],
+        maxBuffer: 1 << 29,
+      },
+    );
+    if (res.error) {
+      throw new Error(`suite ${name}: failed to run vitest: ${res.error.message}\n${stderrTail(res)}`);
+    }
+    let report;
+    try {
+      report = JSON.parse(readFileSync(reportFile, 'utf8'));
+    } catch (err) {
+      throw new Error(
+        `suite ${name}: no parsable vitest JSON (exit ${res.status}): ${err.message}\n${stderrTail(res)}`,
+      );
+    }
+    const failingTitles = report.testResults.flatMap((file) =>
+      file.assertionResults.filter((a) => a.status === 'failed').map((a) => a.fullName),
+    );
+    // a hook/import failure marks the file as failed without counting a failed test: never report it as failures=0
+    if (report.numFailedTestSuites > 0 || report.success === false) {
+      const failedFiles = report.testResults
+        .filter((file) => file.status === 'failed')
+        .map((file) => `  ${file.name}: ${file.message || '(no message)'}`);
+      throw new Error(
+        `suite ${name}: numFailedTestSuites=${report.numFailedTestSuites} success=${report.success}\n${failedFiles.join('\n')}\n  failing tests: ${failingTitles.join(' | ') || '(none)'}`,
+      );
+    }
+    const tests = report.numTotalTests;
+    const passes = report.numPassedTests;
+    const failures = report.numFailedTests;
+    const pending = report.numPendingTests + (report.numTodoTests || 0);
+    suites[name] = { tests, passes, failures, pending, failingTitles };
+    console.log(`${name}: tests=${tests} passes=${passes} failures=${failures} pending=${pending}`);
   }
-  let report;
-  try {
-    report = JSON.parse(readFileSync(reportFile, 'utf8'));
-  } catch (err) {
-    throw new Error(`suite ${name}: no parsable vitest JSON (exit ${res.status}): ${err.message}\n${stderrTail(res)}`);
-  }
-  const failingTitles = report.testResults.flatMap((file) =>
-    file.assertionResults.filter((a) => a.status === 'failed').map((a) => a.fullName),
-  );
-  const tests = report.numTotalTests;
-  const passes = report.numPassedTests;
-  const failures = report.numFailedTests;
-  const pending = report.numPendingTests + (report.numTodoTests || 0);
-  suites[name] = { tests, passes, failures, pending, failingTitles };
-  console.log(`${name}: tests=${tests} passes=${passes} failures=${failures} pending=${pending}`);
+} finally {
+  rmSync(tmpDir, { recursive: true, force: true });
 }
-rmSync(tmpDir, { recursive: true, force: true });
 
 mkdirSync(dirname(outFile), { recursive: true });
 writeFileSync(outFile, `${JSON.stringify({ node: process.version, suites }, null, 2)}\n`);

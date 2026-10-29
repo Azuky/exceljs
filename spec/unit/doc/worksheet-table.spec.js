@@ -66,7 +66,7 @@ function checkTable(ref, ws, testValues) {
       if (value instanceof Date) {
         expect(cellValue).to.equalDate(value);
       } else if (value === null) {
-        expect(cellValue).to.be.null();
+        expect(cellValue).to.be.null;
       } else if (typeof value === 'object') {
         expect(cellValue).to.deep.equal(value);
       } else {

@@ -92,7 +92,7 @@ const self = {
 
   checkSheet(wb) {
     const ws = wb.getWorksheet('data-validations');
-    expect(ws).to.not.be.undefined();
+    expect(ws).to.not.be.undefined;
 
     expect(ws.getCell('B1').dataValidation).to.deep.equal(self.dataValidations.B1);
     expect(ws.getCell('B3').dataValidation).to.deep.equal(self.dataValidations.B3);

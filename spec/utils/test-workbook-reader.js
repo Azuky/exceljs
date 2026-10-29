@@ -63,10 +63,10 @@ module.exports = {
                 expect(row.getCell('B').type).to.equal(ExcelJS.ValueType.Null);
 
                 // C2:D3
-                expect(row.getCell('C').value).to.be.null();
+                expect(row.getCell('C').value).to.be.null;
                 expect(row.getCell('C').type).to.equal(ExcelJS.ValueType.Null);
 
-                expect(row.getCell('D').value).to.be.null();
+                expect(row.getCell('D').value).to.be.null;
                 expect(row.getCell('D').type).to.equal(ExcelJS.ValueType.Null);
 
                 break;
@@ -78,10 +78,10 @@ module.exports = {
                 expect(row.getCell('B').value).to.equal(null);
                 expect(row.getCell('B').type).to.equal(ExcelJS.ValueType.Null);
 
-                expect(row.getCell('C').value).to.be.null();
+                expect(row.getCell('C').value).to.be.null;
                 expect(row.getCell('C').type).to.equal(ExcelJS.ValueType.Null);
 
-                expect(row.getCell('D').value).to.be.null();
+                expect(row.getCell('D').value).to.be.null;
                 expect(row.getCell('D').type).to.equal(ExcelJS.ValueType.Null);
                 break;
 
