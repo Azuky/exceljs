@@ -22,9 +22,7 @@ describe('github issues: Date field with cache style', () => {
         workbookReader.on('error', reject);
       }),
   );
-  // Skipped (Stage 1, owner decision 2026-10-28): streaming WorkbookReader shared-strings race (rows emitted
-  // before sharedStrings are parsed). Un-skip with the fix(stream) backlog task.
-  it.skip('issue 1328 - should emit row with Date Object', () => {
+  it('issue 1328 - should emit row with Date Object', () => {
     expect(rows).that.deep.equals(['Date', new Date('2020-11-20T00:00:00.000Z')]);
   });
 });
