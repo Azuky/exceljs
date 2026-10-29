@@ -8,8 +8,8 @@ pids
 *.seed
 
 # Generated files
-dist/*
-build/*
+dist
+build
 
 # Test Output Folder
 out/*
