@@ -1,5 +1,6 @@
 const fs = require('fs');
 const { promisify } = require('util');
+const { Writable } = require('stream');
 
 const testUtils = require('../../utils/index');
 const { knownBug } = require('../../utils/known-bug');
@@ -7,6 +8,10 @@ const { knownBug } = require('../../utils/known-bug');
 const ExcelJS = verquire('exceljs');
 
 const TEST_XLSX_FILE_NAME = './spec/out/wb.test.xlsx';
+const FILL_FORMULA_FILE = './spec/out/wb-fill-formula.test.xlsx';
+const ADD_WORKSHEET_FILE = './spec/out/wb-add-worksheet.test.xlsx';
+const TAB_COLOR_FILE = './spec/out/wb-tab-color.test.xlsx';
+const IMAGE_SOURCE_FILE = './spec/out/wb-image-source.test.xlsx';
 const IMAGE_FILENAME = `${__dirname}/../data/image.png`;
 const fsReadFileAsync = promisify(fs.readFile);
 
@@ -35,7 +40,7 @@ describe('WorkbookWriter', () => {
           return wb2.xlsx.readFile(TEST_XLSX_FILE_NAME);
         })
         .then((wb2) => {
-          testUtils.checkTestBook(wb2, 'xlsx');
+          testUtils.checkTestBook(wb2, 'xlsx', undefined, { checkFillFormula: false });
         });
     });
 
@@ -88,7 +93,7 @@ describe('WorkbookWriter', () => {
     // WorksheetWriter has no fillFormula, so the shared checkSheet() skips the A10:E11 block for
     // the stream writer (it only runs when the sheet carries those cells). Assert it explicitly.
     it('fill-style shared formula and array formula', async () => {
-      const wb = new ExcelJS.stream.xlsx.WorkbookWriter({ filename: TEST_XLSX_FILE_NAME });
+      const wb = new ExcelJS.stream.xlsx.WorkbookWriter({ filename: FILL_FORMULA_FILE });
       const ws = wb.addWorksheet('Hello');
       ws.getCell('A9').value = 1;
       ws.getCell('A10').value = { shareType: 'shared', ref: 'A10:E10', formula: 'A9', result: 1 };
@@ -103,7 +108,7 @@ describe('WorkbookWriter', () => {
       await wb.commit();
 
       const wb2 = new ExcelJS.Workbook();
-      await wb2.xlsx.readFile(TEST_XLSX_FILE_NAME);
+      await wb2.xlsx.readFile(FILL_FORMULA_FILE);
       const ws2 = wb2.getWorksheet('Hello');
 
       expect(ws2.getCell('A10').value).to.deep.equal({
@@ -161,7 +166,7 @@ describe('WorkbookWriter', () => {
 
     describe('addWorksheet options', () => {
       it('keeps state, views, page setup, auto filter, header/footer and properties', async () => {
-        const wb = new ExcelJS.stream.xlsx.WorkbookWriter({ filename: TEST_XLSX_FILE_NAME });
+        const wb = new ExcelJS.stream.xlsx.WorkbookWriter({ filename: ADD_WORKSHEET_FILE });
         const visible = wb.addWorksheet('visible');
         visible.getCell('A1').value = 1;
         const hidden = wb.addWorksheet('hidden', {
@@ -179,7 +184,7 @@ describe('WorkbookWriter', () => {
         await wb.commit();
 
         const wb2 = new ExcelJS.Workbook();
-        await wb2.xlsx.readFile(TEST_XLSX_FILE_NAME);
+        await wb2.xlsx.readFile(ADD_WORKSHEET_FILE);
 
         const visible2 = wb2.getWorksheet('visible');
         expect(visible2.state).to.equal('visible');
@@ -206,7 +211,7 @@ describe('WorkbookWriter', () => {
       it('moves the deprecated tabColor option into properties and warns', async () => {
         const trace = vi.spyOn(console, 'trace').mockImplementation(() => {});
         try {
-          const wb = new ExcelJS.stream.xlsx.WorkbookWriter({ filename: TEST_XLSX_FILE_NAME });
+          const wb = new ExcelJS.stream.xlsx.WorkbookWriter({ filename: TAB_COLOR_FILE });
           const ws = wb.addWorksheet('colored', { tabColor: { argb: 'FFFF0000' } });
           ws.getCell('A1').value = 1;
           ws.commit();
@@ -219,7 +224,7 @@ describe('WorkbookWriter', () => {
         }
 
         const wb2 = new ExcelJS.Workbook();
-        await wb2.xlsx.readFile(TEST_XLSX_FILE_NAME);
+        await wb2.xlsx.readFile(TAB_COLOR_FILE);
         expect(wb2.getWorksheet('colored').properties.tabColor).to.deep.equal({ argb: 'FFFF0000' });
       });
     });
@@ -239,6 +244,7 @@ describe('WorkbookWriter', () => {
         })
         .then((wb2) => {
           testUtils.checkTestBook(wb2, 'xlsx', undefined, {
+            checkFillFormula: false,
             checkStyles: false,
           });
         });
@@ -667,7 +673,7 @@ describe('WorkbookWriter', () => {
 
     describe('image sources', () => {
       const readBackground = async (addImage) => {
-        const wb = new ExcelJS.stream.xlsx.WorkbookWriter({ filename: TEST_XLSX_FILE_NAME });
+        const wb = new ExcelJS.stream.xlsx.WorkbookWriter({ filename: IMAGE_SOURCE_FILE });
         const ws = wb.addWorksheet('Hello');
         const imageId = addImage(wb);
         ws.getCell('A1').value = 'Hello, World!';
@@ -675,7 +681,7 @@ describe('WorkbookWriter', () => {
         await wb.commit();
 
         const wb2 = new ExcelJS.Workbook();
-        await wb2.xlsx.readFile(TEST_XLSX_FILE_NAME);
+        await wb2.xlsx.readFile(IMAGE_SOURCE_FILE);
         const ws2 = wb2.getWorksheet('Hello');
         return wb2.getImage(ws2.getBackgroundImageId());
       };
@@ -712,7 +718,13 @@ describe('WorkbookWriter', () => {
       );
 
       it('rejects commit when the image has no filename, buffer or base64', async () => {
-        const wb = new ExcelJS.stream.xlsx.WorkbookWriter({ filename: TEST_XLSX_FILE_NAME });
+        const wb = new ExcelJS.stream.xlsx.WorkbookWriter({
+          stream: new Writable({
+            write(chunk, encoding, callback) {
+              callback();
+            },
+          }),
+        });
         const ws = wb.addWorksheet('Hello');
         ws.addBackgroundImage(wb.addImage({ extension: 'png' }));
 

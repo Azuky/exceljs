@@ -302,7 +302,8 @@ const self = {
           expect(ws.getCell(address).type).to.equal(ExcelJS.ValueType.Formula);
         });
 
-        if (ws.getCell('A10').value) {
+        // stream writers have no fillFormula (see the dedicated spec); they pass checkFillFormula: false
+        if (options.checkFillFormula !== false) {
           // Fill Formula Shared
           expect(ws.getCell('A10').value).to.deep.equal({
             shareType: 'shared',
