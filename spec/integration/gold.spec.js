@@ -34,6 +34,19 @@ describe('Gold Book', () => {
       expect(ws.lastRow).to.equal(ws.getRow(6));
     });
 
-    it('Styles', () => {});
+    // gold.xlsx has no dedicated styles sheet, so this checks the styles its 'Values' sheet carries.
+    it('Styles', () => {
+      const ws = wb.getWorksheet('Values');
+
+      // date cell uses Excel's built-in short date format
+      expect(ws.getCell('B4').numFmt).to.equal('mm-dd-yy');
+
+      // hyperlink cell is underlined with the theme hyperlink colour
+      expect(ws.getCell('B6').font.underline).to.equal(true);
+      expect(ws.getCell('B6').font.color).to.deep.equal({ theme: 10 });
+
+      // plain cells carry no explicit style
+      expect(ws.getCell('B1').style).to.deep.equal({});
+    });
   });
 });
