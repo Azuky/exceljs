@@ -1,6 +1,5 @@
 const path = require('path');
 
-const { expect } = require('chai');
 const testutils = require('../utils/index');
 
 const ExcelJS = verquire('exceljs');
