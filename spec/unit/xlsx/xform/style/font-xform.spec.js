@@ -41,6 +41,15 @@ const expectations = [
     },
     tests: ['render', 'renderIn', 'parse'],
   },
+  {
+    title: 'unknown children are ignored',
+    create() {
+      return new FontXform();
+    },
+    xml: '<font><b/><bogus val="1"/><sz val="14"/><vertAlign val="superscript"/></font>',
+    parsedModel: { bold: true, size: 14, vertAlign: 'superscript' },
+    tests: ['parse'],
+  },
 ];
 
 describe('FontXform', () => {

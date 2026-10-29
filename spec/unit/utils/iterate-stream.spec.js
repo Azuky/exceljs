@@ -12,14 +12,12 @@ async function collect(stream) {
 }
 
 describe('iterateStream', () => {
-  it('yields every item of a normal object-mode stream in order', async function () {
-    this.timeout(2000);
+  it('yields every item of a normal object-mode stream in order', async () => {
     const items = await collect(Readable.from(['a', 'b', 'c', 'd']));
     expect(items).to.deep.equal(['a', 'b', 'c', 'd']);
-  });
+  }, 2000);
 
-  it('ignores a spurious manual end event and still yields all buffered items', async function () {
-    this.timeout(2000);
+  it('ignores a spurious manual end event and still yields all buffered items', async () => {
     const stream = new Readable({ objectMode: true, read() {} });
     const pushed = [1, 2, 3, 4, 5];
     stream.push(pushed[0]);
@@ -38,10 +36,9 @@ describe('iterateStream', () => {
       }
     }
     expect(items).to.deep.equal(pushed);
-  });
+  }, 2000);
 
-  it('terminates and yields data for a stream without readableEnded', async function () {
-    this.timeout(2000);
+  it('terminates and yields data for a stream without readableEnded', async () => {
     const stream = new ReadableStream({ objectMode: true, read() {} });
     expect('readableEnded' in stream).to.equal(false);
     ['x', 'y', 'z'].forEach((item) => stream.push(item));
@@ -49,5 +46,24 @@ describe('iterateStream', () => {
 
     const items = await collect(stream);
     expect(items).to.deep.equal(['x', 'y', 'z']);
-  });
+  }, 2000);
+
+  it('rejects the consumer with the error when the stream is destroyed mid-iteration', async () => {
+    const stream = new Readable({ objectMode: true, read() {} });
+    stream.push('first');
+    const boom = new Error('stream blew up');
+
+    const items = [];
+    let caught;
+    try {
+      for await (const item of iterateStream(stream)) {
+        items.push(item);
+        setImmediate(() => stream.destroy(boom));
+      }
+    } catch (e) {
+      caught = e;
+    }
+    expect(items).to.deep.equal(['first']);
+    expect(caught).to.equal(boom);
+  }, 2000);
 });

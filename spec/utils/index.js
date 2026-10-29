@@ -75,7 +75,7 @@ module.exports = {
     options = getOptions(docType, options);
     sheets = sheets || ['values'];
 
-    expect(workbook).to.not.be.undefined();
+    expect(workbook).to.not.be.undefined;
 
     if (options.checkViews) {
       expect(workbook.views).to.deep.equal([

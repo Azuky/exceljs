@@ -11,7 +11,7 @@ const expectations = [
       return this.preparedModel;
     },
     xml: '<col min="2" max="2" width="10.15625" bestFit="1" customWidth="1"/>',
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
   {
     title: 'Outline',
@@ -33,7 +33,7 @@ const expectations = [
       outlineLevel: 1,
       collapsed: true,
     },
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
 ];
 

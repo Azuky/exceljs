@@ -1,7 +1,5 @@
 'use strict';
 
-const chai = require('chai');
-
 process.env.EXCEL_NATIVE = 'yes';
 
 const verquire = require('../../../utils/verquire');
@@ -9,8 +7,6 @@ const verquire = require('../../../utils/verquire');
 const tools = require('../../../utils/tools');
 
 const Excel = verquire('exceljs');
-
-const { expect } = chai;
 
 const TEST_XLSX_FILE_NAME = './spec/out/wb.test.xlsx';
 const RT_ARR = [
@@ -51,7 +47,7 @@ describe('pr related issues', () => {
         })
         .then((wb2) => {
           const ws2 = wb2.getWorksheet('sheet1');
-          expect(ws2).to.not.be.undefined();
+          expect(ws2).to.not.be.undefined;
           expect(ws2.getCell('A1').value).to.deep.equal(TEST_VALUE);
         });
     });

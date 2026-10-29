@@ -35,4 +35,21 @@ const expectations = [
 
 describe('AutoFilterXform', () => {
   testXformHelper(expectations);
+
+  describe('unexpected nodes', () => {
+    it('rejects an unknown child in parseOpen', async () => {
+      let error;
+      try {
+        await testXformHelper.parseXml(new AutoFilterXform(), '<autoFilter ref="A1:B2"><bogus/></autoFilter>');
+      } catch (e) {
+        error = e;
+      }
+      expect(error).to.be.an('error');
+      expect(error.message).to.match(/^Unexpected xml node in parseOpen: \{"name":"bogus","attributes":\{\}/);
+    });
+
+    it('throws on an unexpected closing tag', () => {
+      expect(() => new AutoFilterXform().parseClose('bogus')).to.throw('Unexpected xml node in parseClose: bogus');
+    });
+  });
 });

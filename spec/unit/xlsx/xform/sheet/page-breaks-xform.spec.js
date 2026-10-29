@@ -12,7 +12,14 @@ const expectations = [
     preparedModel: { id: 2, max: 3, min: 1, man: 1 },
     xml: '<brk id="2" max="3" min="1" man="1"/>',
     parsedModel: { id: 2, max: 3, min: 1, man: 1 },
-    tests: ['prepare', 'render', 'renderIn'],
+    // known bug: parseOpen reads the (non-existent) `ref` attribute of <brk> instead of id/min/max/man
+    // nothing of the result survives the bug: no normal parse test, only the known deviation
+    knownDeviations: {
+      parse: {
+        reason: /actual: undefined\nexpected: \{"id":2,"max":3,"min":1,"man":1\}/,
+      },
+    },
+    tests: ['prepare', 'render', 'renderIn', 'parse'],
   },
 ];
 

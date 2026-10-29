@@ -53,4 +53,20 @@ const expectations = [
 
 describe('FilterColumnXform', () => {
   testXformHelper(expectations);
+
+  describe('unexpected nodes', () => {
+    it('rejects an unknown child in parseOpen', async () => {
+      let error;
+      try {
+        await testXformHelper.parseXml(
+          new FilterColumnXform(),
+          '<filterColumn colId="0" hiddenButton="0"><bogus/></filterColumn>',
+        );
+      } catch (e) {
+        error = e;
+      }
+      expect(error).to.be.an('error');
+      expect(error.message).to.match(/^Unexpected xml node in parseOpen: \{"name":"bogus","attributes":\{\}/);
+    });
+  });
 });

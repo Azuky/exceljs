@@ -13,7 +13,7 @@ const expectations = [
       return this.preparedModel;
     },
     xml: '<dimension ref="A1:F5"/>',
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
 ];
 

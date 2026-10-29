@@ -11,7 +11,7 @@ const expectations = [
     preparedModel: { id: 1, name: 'Foo', totalsRowLabel: 'Bar' },
     xml: '<tableColumn id="1" name="Foo" totalsRowLabel="Bar" />',
     parsedModel: { name: 'Foo', totalsRowLabel: 'Bar' },
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
   {
     title: 'function',
@@ -21,7 +21,7 @@ const expectations = [
     preparedModel: { id: 1, name: 'Foo', totalsRowFunction: 'Baz' },
     xml: '<tableColumn id="1" name="Foo" totalsRowFunction="Baz" />',
     parsedModel: { name: 'Foo', totalsRowFunction: 'Baz' },
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn', 'parse', 'parseIn'],
   },
 ];
 

@@ -149,4 +149,43 @@ describe('DefinedNames', () => {
       { name: 'range', ranges: ['Sheet3!$A$2:$F$2228'] },
     ]);
   });
+
+  it('expands a range location into every cell of the range', () => {
+    const dn = new DefinedNames();
+    dn.add('S!A1:B2', 'sq');
+
+    expect(dn.getRanges('sq')).to.deep.equal({ name: 'sq', ranges: ['S!$A$1:$B$2'] });
+    ['S!A1', 'S!B1', 'S!A2', 'S!B2'].forEach((cell) => {
+      expect(dn.getNames(cell)).to.deep.equal(['sq']);
+    });
+    expect(dn.getNames('S!C1')).to.deep.equal([]);
+  });
+
+  it('forEach visits every named cell with its name', () => {
+    const dn = new DefinedNames();
+    dn.add('S!A1:B2', 'sq');
+    dn.add('S!D4', 'one');
+
+    const visited = [];
+    dn.forEach((name, cell) => visited.push(`${name}:${cell.address}`));
+
+    expect(visited.sort()).to.deep.equal(['one:D4', 'sq:A1', 'sq:A2', 'sq:B1', 'sq:B2']);
+  });
+
+  it('removeAllNames drops every name from a cell', () => {
+    const dn = new DefinedNames();
+    dn.add('S!A1', 'first');
+    dn.add('S!A1', 'second');
+    dn.add('S!B1', 'first');
+
+    dn.removeAllNames({ sheetName: 'S', address: 'A1', row: 1, col: 1 });
+
+    expect(dn.getNames('S!A1')).to.deep.equal([]);
+    expect(dn.getNames('S!B1')).to.deep.equal(['first']);
+  });
+
+  it('returns no ranges for an unknown name', () => {
+    const dn = new DefinedNames();
+    expect(dn.getRanges('nothing')).to.deep.equal({ name: 'nothing', ranges: [] });
+  });
 });

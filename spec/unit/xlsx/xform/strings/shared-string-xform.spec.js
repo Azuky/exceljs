@@ -61,7 +61,7 @@ const expectations = [
     },
     xml: '<si><t></t></si>',
     parsedModel: '',
-    tests: ['parse'],
+    tests: ['render', 'renderIn', 'parse'],
   },
   {
     title: 'text + phonetic',
@@ -103,6 +103,45 @@ const expectations = [
     xml: '<si><t xml:space="preserve">Hello,\nWorld!</t></si>',
     parsedModel: 'Hello,\nWorld!',
     tests: ['render', 'renderIn', 'parse'],
+  },
+  {
+    // the phonetic runs are not part of the shared string model: only the base text is kept
+    // deliberately not schema-valid: CT_PhoneticRun only contains <t>, <r> inside <rPh> checks the parser tolerates it
+    title: 'text + phonetic with rich text runs',
+    create() {
+      return new SharedStringXform();
+    },
+    xml: '<si><t>漢字</t><rPh sb="0" eb="1"><r><rPr><b/></rPr><t>カン</t></r></rPh><rPh sb="1" eb="2"><r><t>ジ</t></r></rPh></si>',
+    parsedModel: '漢字',
+    tests: ['parse'],
+  },
+  {
+    title: 'rich text + phonetic',
+    create() {
+      return new SharedStringXform();
+    },
+    xml: '<si><r><t>漢</t></r><r><rPr><b/></rPr><t>字</t></r><rPh sb="0" eb="2"><t>カンジ</t></rPh></si>',
+    parsedModel: { richText: [{ text: '漢' }, { font: { bold: true }, text: '字' }] },
+    tests: ['parse'],
+  },
+  {
+    title: 'text with surrounding spaces',
+    create() {
+      return new SharedStringXform();
+    },
+    preparedModel: ' padded ',
+    xml: '<si><t xml:space="preserve"> padded </t></si>',
+    parsedModel: ' padded ',
+    tests: ['render', 'renderIn', 'parse'],
+  },
+  {
+    title: 'text with escaped control characters',
+    create() {
+      return new SharedStringXform();
+    },
+    xml: '<si><t>a_x0009_b_x0041_</t></si>',
+    parsedModel: 'a\tbA',
+    tests: ['parse'],
   },
 ];
 

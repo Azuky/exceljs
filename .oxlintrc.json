@@ -23,8 +23,20 @@
   "overrides": [
     {
       "files": ["spec/**"],
-      "env": { "mocha": true },
-      "globals": { "verquire": "readonly", "expect": "readonly" }
+      "globals": {
+        "verquire": "readonly",
+        "expect": "readonly",
+        "vi": "readonly",
+        "describe": "readonly",
+        "it": "readonly",
+        "beforeAll": "readonly",
+        "afterAll": "readonly",
+        "beforeEach": "readonly",
+        "afterEach": "readonly"
+      },
+      "rules": {
+        "no-unused-expressions": "off"
+      }
     }
   ],
   "rules": {

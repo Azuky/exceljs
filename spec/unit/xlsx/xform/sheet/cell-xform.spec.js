@@ -25,6 +25,15 @@ const fakeHyperlinkMap = {
   H1: 'http://www.foo.com',
 };
 
+const formulaOptions = () => ({
+  sharedStrings: new SharedStringsXform(),
+  hyperlinks: [],
+  hyperlinkMap: fakeHyperlinkMap,
+  styles: fakeStyles,
+  formulae: {},
+  siFormulae: 0,
+});
+
 const expectations = [
   {
     title: 'Styled Null',
@@ -520,8 +529,174 @@ const expectations = [
       siFormulae: 0,
     },
   },
+  {
+    title: 'Boolean Formula (true)',
+    create() {
+      return new CellXform();
+    },
+    initialModel: { address: 'A1', type: Enums.ValueType.Formula, formula: 'A1>1', result: true },
+    preparedModel: { address: 'A1', type: Enums.ValueType.Formula, formula: 'A1>1', result: true },
+    xml: '<c r="A1" t="b"><f>A1&gt;1</f><v>1</v></c>',
+    parsedModel: { address: 'A1', type: Enums.ValueType.Formula, formula: 'A1>1', result: true },
+    reconciledModel: { address: 'A1', type: Enums.ValueType.Formula, formula: 'A1>1', result: true },
+    tests: ['prepare', 'render', 'renderIn', 'parse', 'reconcile'],
+    options: formulaOptions(),
+  },
+  {
+    title: 'Boolean Formula (false)',
+    create() {
+      return new CellXform();
+    },
+    preparedModel: { address: 'A1', type: Enums.ValueType.Formula, formula: 'A1>1', result: false },
+    xml: '<c r="A1" t="b"><f>A1&gt;1</f><v>0</v></c>',
+    parsedModel: { address: 'A1', type: Enums.ValueType.Formula, formula: 'A1>1', result: false },
+    tests: ['render', 'renderIn', 'parse'],
+  },
+  {
+    title: 'Error Formula',
+    create() {
+      return new CellXform();
+    },
+    preparedModel: {
+      address: 'A1',
+      type: Enums.ValueType.Formula,
+      formula: '1/0',
+      result: { error: '#DIV/0!' },
+    },
+    xml: '<c r="A1" t="e"><f>1/0</f><v>#DIV/0!</v></c>',
+    parsedModel: {
+      address: 'A1',
+      type: Enums.ValueType.Formula,
+      formula: '1/0',
+      result: { error: '#DIV/0!' },
+    },
+    tests: ['render', 'renderIn', 'parse'],
+  },
+  {
+    title: 'Formula without a result',
+    create() {
+      return new CellXform();
+    },
+    preparedModel: { address: 'A1', type: Enums.ValueType.Formula, formula: 'SUM(B1:B2)' },
+    xml: '<c r="A1"><f>SUM(B1:B2)</f></c>',
+    parsedModel: { address: 'A1', type: Enums.ValueType.Formula, formula: 'SUM(B1:B2)' },
+    tests: ['render', 'renderIn', 'parse'],
+  },
+  {
+    title: 'Date Formula',
+    create() {
+      return new CellXform();
+    },
+    initialModel: {
+      address: 'A1',
+      type: Enums.ValueType.Formula,
+      formula: 'B1+1',
+      result: new Date('2016-06-09T00:00:00.000Z'),
+    },
+    preparedModel: {
+      address: 'A1',
+      type: Enums.ValueType.Formula,
+      formula: 'B1+1',
+      result: new Date('2016-06-09T00:00:00.000Z'),
+      styleId: 1,
+    },
+    xml: '<c r="A1" s="1"><f>B1+1</f><v>42530</v></c>',
+    parsedModel: {
+      address: 'A1',
+      type: Enums.ValueType.Formula,
+      formula: 'B1+1',
+      result: 42530,
+      styleId: 1,
+    },
+    reconciledModel: {
+      address: 'A1',
+      type: Enums.ValueType.Formula,
+      formula: 'B1+1',
+      result: new Date('2016-06-09T00:00:00.000Z'),
+      style: { numFmt: 'mm-dd-yy' },
+    },
+    tests: ['prepare', 'render', 'renderIn', 'parse', 'reconcile'],
+    options: formulaOptions(),
+  },
+  {
+    // in the 1904 date system serial 42530 is 1462 days later than in the 1900 system
+    title: 'Date Formula in the 1904 date system',
+    create() {
+      return new CellXform();
+    },
+    initialModel: {
+      address: 'A1',
+      type: Enums.ValueType.Formula,
+      formula: 'B1+1',
+      result: new Date('2020-06-10T00:00:00.000Z'),
+    },
+    preparedModel: {
+      address: 'A1',
+      type: Enums.ValueType.Formula,
+      formula: 'B1+1',
+      result: new Date('2020-06-10T00:00:00.000Z'),
+      styleId: 1,
+      date1904: true,
+    },
+    xml: '<c r="A1" s="1"><f>B1+1</f><v>42530</v></c>',
+    parsedModel: {
+      address: 'A1',
+      type: Enums.ValueType.Formula,
+      formula: 'B1+1',
+      result: 42530,
+      styleId: 1,
+    },
+    reconciledModel: {
+      address: 'A1',
+      type: Enums.ValueType.Formula,
+      formula: 'B1+1',
+      result: new Date('2020-06-10T00:00:00.000Z'),
+      style: { numFmt: 'mm-dd-yy' },
+    },
+    tests: ['prepare', 'render', 'renderIn', 'parse', 'reconcile'],
+    options: { ...formulaOptions(), date1904: true },
+  },
 ];
 
 describe('CellXform', () => {
   testXformHelper(expectations);
+
+  describe('error paths', () => {
+    it('throws when a shared formula clone has no master', () => {
+      const xform = new CellXform();
+      const model = { address: 'B2', type: Enums.ValueType.Formula, sharedFormula: 'Z9', result: 1 };
+      expect(() => xform.prepare(model, formulaOptions())).to.throw(
+        'Shared Formula master must exist above and or left of clone for cell B2',
+      );
+    });
+
+    it('throws when a formula result has an unsupported type', () => {
+      const xform = new CellXform();
+      const model = { address: 'A1', type: Enums.ValueType.Formula, formula: 'A2', result: { unexpected: true } };
+      expect(() => xform.prepare(model, formulaOptions())).to.throw('I could not understand type of value');
+    });
+
+    it('joins value text that arrives in several text events', () => {
+      const xform = new CellXform();
+      xform.parseOpen({ name: 'c', attributes: { r: 'A1', t: 'str' } });
+      xform.parseOpen({ name: 'v', attributes: {} });
+      xform.parseText('Hello, ');
+      xform.parseText('world');
+      xform.parseClose('v');
+      xform.parseClose('c');
+      expect(xform.model).to.deep.include({ address: 'A1', type: Enums.ValueType.String, value: 'Hello, world' });
+    });
+
+    it('joins formula text that arrives in several text events', () => {
+      const xform = new CellXform();
+      xform.parseOpen({ name: 'c', attributes: { r: 'A1' } });
+      xform.parseOpen({ name: 'f', attributes: {} });
+      xform.parseText('SUM(A2:');
+      xform.parseText('A9)');
+      xform.parseClose('f');
+      xform.parseClose('c');
+      expect(xform.model.formula).to.equal('SUM(A2:A9)');
+      expect(xform.model.type).to.equal(Enums.ValueType.Formula);
+    });
+  });
 });

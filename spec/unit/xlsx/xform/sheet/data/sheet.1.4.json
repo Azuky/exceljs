@@ -14,7 +14,9 @@
       "showGridLines": true,
       "showRowColHeaders": true,
       "zoomScale": 100,
-      "zoomScaleNormal": 100
+      "zoomScaleNormal": 100,
+      "workbookViewId": 0,
+      "rightToLeft": false
     }
   ],
   "pageSetup": {
@@ -119,6 +121,20 @@
       "style": {}
     }
   ],
+  "background": null,
+  "mergeCells": null,
+  "dataValidations": null,
+  "drawing": null,
+  "headerFooter": {
+    "oddHeader": "&C&KCCCCCC&\"Aril\"2 exceljs",
+    "oddFooter": "&Lexceljs&C&F&RPage &P",
+    "firstHeader": "Hello Exceljs",
+    "firstFooter": "Hello World",
+    "differentFirst": true,
+    "differentOddEven": true,
+    "evenHeader": "&C&KCCCCCC&\"Aril\"3 exceljs evenHeader",
+    "evenFooter": "&Lexceljs&C&F&RPage &P evenHeader"
+  },
   "media": [],
   "tables": [],
   "conditionalFormattings": []
