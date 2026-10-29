@@ -48,28 +48,18 @@
     "test:manual": "node spec/manual/app.js",
     "test:typescript": "mocha -r ts-node/register spec/typescript/**/*.spec.ts",
     "clean-build": "npm run clean && npm run build",
-    "lint": "eslint --format node_modules/eslint-friendly-formatter .",
-    "lint:fix": "prettier-eslint --write $(pwd)'/**/*.js'",
-    "lint:staged": "lint-staged",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
     "clean": "rm -rf build/ && rm -rf dist",
     "benchmark": "node --expose-gc benchmark",
     "benchmark:debug": "node --expose-gc --inspect-brk --trace-deopt benchmark",
     "build": "grunt build",
     "install-build": "npm install && grunt build",
     "preversion": "npm run clean && npm run build && npm run test:version",
-    "postversion": "git push --no-verify && git push --tags --no-verify"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
-  "lint-staged": {
-    "*.js": [
-      "prettier-eslint --write",
-      "eslint --format node_modules/eslint-friendly-formatter",
-      "git add"
-    ]
+    "postversion": "git push --no-verify && git push --tags --no-verify",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "prepare": "husky"
   },
   "keywords": [
     "xlsx",
@@ -121,12 +111,6 @@
     "chai-xml": "^0.3.2",
     "core-js": "^3.6.5",
     "dirty-chai": "^2.0.1",
-    "eslint": "^6.5.1",
-    "eslint-config-airbnb-base": "^14.2.0",
-    "eslint-config-prettier": "^6.12.0",
-    "eslint-friendly-formatter": "^4.0.1",
-    "eslint-plugin-import": "^2.22.0",
-    "eslint-plugin-node": "^11.1.0",
     "express": "^4.16.4",
     "got": "^9.0.0",
     "grunt": "^1.3.0",
@@ -137,14 +121,20 @@
     "grunt-contrib-watch": "^1.1.0",
     "grunt-exorcise": "^2.1.1",
     "grunt-terser": "^1.0.0",
-    "husky": "^4.3.0",
-    "lint-staged": "^10.2.13",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
     "mocha": "^7.2.0",
-    "prettier-eslint": "^11.0.0",
-    "prettier-eslint-cli": "^5.0.0",
+    "oxfmt": "^0.75.0",
+    "oxlint": "^1.90.0",
     "regenerator-runtime": "^0.13.7",
     "sax": "^1.2.4",
     "ts-node": "^8.10.2",
     "typescript": "^3.9.7"
+  },
+  "lint-staged": {
+    "*.{js,mjs,cjs,ts}": [
+      "oxfmt",
+      "oxlint --fix"
+    ]
   }
 }

@@ -1,0 +1,12 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "singleQuote": true,
+  "trailingComma": "all",
+  "printWidth": 120,
+  "tabWidth": 2,
+  "endOfLine": "lf",
+  "ignorePatterns": [
+    "dist", "build", ".baseline", "graphify-out", "pnpm-lock.yaml", "test/", "spec/manual/",
+    "spec/integration/data/", "spec/out/", "lib/xlsx/xml/", "*.md", "CLAUDE.local.md", ".claude"
+  ]
+}
