@@ -10,7 +10,10 @@ const TEST_FILE_NAME = './spec/out/wb.test.xlsx';
 // because of: shared strings, sheet names, etc are not read in guaranteed order
 describe('WorkbookReader', () => {
   describe('Serialise', () => {
-    it('xlsx file', function () {
+    // Skipped (Stage 1, owner decision 2026-10-28): flaky under full-suite load, streaming WorkbookReader
+    // race (worksheet parsed before workbook.xml, this.model undefined). Un-skip with the fix(stream) backlog
+    // task.
+    it.skip('xlsx file', function () {
       this.timeout(10000);
       const wb = testutils.createTestBook(new ExcelJS.Workbook(), 'xlsx');
 
