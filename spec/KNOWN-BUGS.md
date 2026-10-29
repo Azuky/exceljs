@@ -44,9 +44,9 @@ Format: lib location - wrong vs expected - spec file: test title. `knownBug` tes
   characters; rejects a duplicate name, ignoring case.
 - `lib/csv/csv.js:134` - `value.result || ''` writes falsy formula results (0, false) as empty fields -
   `spec/integration/workbook/workbook.spec.js`: writes falsy formula results.
-- `lib/csv/csv.js:146` - rich text cells are written as a JSON blob instead of their text (may be by design, see
-  open questions) - `spec/integration/workbook/workbook.spec.js`: writes a rich text cell as its plain concatenated
-  text.
+- `lib/csv/csv.js:146` - rich text cells fall through to the generic `JSON.stringify` branch and are written as a
+  JSON blob instead of their concatenated text - `spec/integration/workbook/workbook.spec.js`: writes a rich text cell
+  as its plain concatenated text.
 - `lib/csv/csv.js:49-69` - the default `YYYY-MM-DD[T]HH:mm:ssZ` format is matched strictly against the local offset,
   so a UTC `...Z` timestamp (what `write` emits with `dateUTC`) stays a string -
   `spec/integration/workbook/workbook.spec.js`: reads back the UTC timestamps that write emits with dateUTC.
@@ -116,10 +116,12 @@ Format: lib location - wrong vs expected - spec file: test title. `knownBug` tes
   uncaught exception, and with a listener the reader never reports anything -
   `spec/integration/workbook-xlsx-stream-reader.spec.js`: emits 'error' for a file that does not exist.
 
-## Open questions for the owner
+## Resolved owner questions (2026-10-29)
 
-- CSV rich text is written as JSON (`lib/csv/csv.js:146`): bug or by design?
-- `StreamBuf` accepts writes after `end()` (characterisation test in `spec/unit/utils/stream-buf.spec.js`, "write after
-  end"): intended?
-- Stream reader defaults: README documents `entries: 'emit'` and `hyperlinks: 'cache'`, but the code defaults both to
-  `'ignore'` (`lib/stream/xlsx/workbook-reader.js:28,30`). Which one should win?
+- CSV rich text written as JSON (`lib/csv/csv.js:146`): a bug. The default `map` converts every other cell type to
+  text; rich text only reaches the catch-all `JSON.stringify`. Pinned above.
+- `StreamBuf` accepts writes after `end()`: deviates from the node `Writable` contract (`ERR_STREAM_WRITE_AFTER_END`),
+  but `StreamBuf` is internal and no caller writes after ending it. Kept as a characterisation test
+  (`spec/unit/utils/stream-buf.spec.js`, "write after end"), not a known bug.
+- Stream reader defaults: the code wins (`lib/stream/xlsx/workbook-reader.js:26-30`). Those defaults predate the
+  README table, which was wrong about `entries`, `hyperlinks` and `styles`; the README now matches the code.
