@@ -289,5 +289,42 @@ describe('Workbook', () => {
           expect(Buffer.compare(imageData, image2.buffer)).to.equal(0);
         });
     });
+
+    it('stores a base64 image', async () => {
+      const imageData = await fsReadFileAsync(IMAGE_FILENAME);
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet('blort');
+      const imageId = wb.addImage({
+        base64: `data:image/png;base64,${imageData.toString('base64')}`,
+        extension: 'png',
+      });
+      ws.addImage(imageId, 'B2:D4');
+
+      const buffer = await wb.xlsx.writeBuffer();
+
+      const wb2 = new ExcelJS.Workbook();
+      await wb2.xlsx.load(buffer);
+      const images = wb2.getWorksheet('blort').getImages();
+      expect(images.length).to.equal(1);
+      const image = wb2.getImage(images[0].imageId);
+      expect(image.extension).to.equal('png');
+      expect(Buffer.compare(imageData, image.buffer)).to.equal(0);
+    });
+
+    it('rejects when the image has no filename, buffer or base64', async () => {
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet('blort');
+      const imageId = wb.addImage({ extension: 'png' });
+      ws.addImage(imageId, 'B2:D4');
+
+      let error;
+      try {
+        await wb.xlsx.writeBuffer();
+      } catch (e) {
+        error = e;
+      }
+      expect(error).to.be.an('error');
+      expect(error.message).to.equal('Unsupported media');
+    });
   });
 });

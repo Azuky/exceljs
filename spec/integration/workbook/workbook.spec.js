@@ -871,6 +871,65 @@ describe('Workbook', () => {
     }
   });
 
+  describe('Xlsx container options', () => {
+    const buildBook = () => {
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet('opts');
+      ws.getCell('A1').value = 'plain';
+      ws.getCell('A1').font = { bold: true };
+      ws.getCell('B1').value = 42;
+      return wb;
+    };
+
+    it('loads base64 encoded data', async () => {
+      const buffer = await buildBook().xlsx.writeBuffer();
+
+      const wb2 = new ExcelJS.Workbook();
+      await wb2.xlsx.load(buffer.toString('base64'), { base64: true });
+
+      const ws2 = wb2.getWorksheet('opts');
+      expect(ws2.getCell('A1').value).to.equal('plain');
+      expect(ws2.getCell('B1').value).to.equal(42);
+    });
+
+    it('createInputStream is deprecated', () => {
+      const wb = new ExcelJS.Workbook();
+      expect(() => wb.xlsx.createInputStream()).to.throw('`XLSX#createInputStream` is deprecated');
+    });
+
+    it('writeFile rejects when the target cannot be created', async () => {
+      let error;
+      try {
+        await buildBook().xlsx.writeFile('./spec/out/no-such-dir-xlsx-container/wb.test.xlsx');
+      } catch (e) {
+        error = e;
+      }
+      expect(error).to.be.an('error');
+      expect(error.code).to.equal('ENOENT');
+    });
+
+    it('useStyles:false drops style information but keeps values', async () => {
+      const buffer = await buildBook().xlsx.writeBuffer({ useStyles: false });
+
+      const wb2 = new ExcelJS.Workbook();
+      await wb2.xlsx.load(buffer);
+
+      const ws2 = wb2.getWorksheet('opts');
+      expect(ws2.getCell('A1').value).to.equal('plain');
+      expect(ws2.getCell('B1').value).to.equal(42);
+      expect(ws2.getCell('A1').font).to.be.undefined;
+    });
+
+    it('keeps styles by default', async () => {
+      const buffer = await buildBook().xlsx.writeBuffer();
+
+      const wb2 = new ExcelJS.Workbook();
+      await wb2.xlsx.load(buffer);
+
+      expect(wb2.getWorksheet('opts').getCell('A1').font).to.deep.equal({ bold: true });
+    });
+  });
+
   describe('Sheet Views', () => {
     it('frozen panes', () => {
       const wb = new ExcelJS.Workbook();
