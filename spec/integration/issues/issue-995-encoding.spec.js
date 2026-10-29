@@ -21,5 +21,5 @@ describe('github issues', () => {
       .then((ws2) => {
         expect(ws2.getCell('A1').value).to.equal(HEBREW_TEST_STRING);
       });
-  }).timeout(6000);
+  }, 6000);
 });

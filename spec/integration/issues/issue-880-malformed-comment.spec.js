@@ -20,5 +20,5 @@ describe('github issues', () => {
           wstream.end();
         });
     });
-  }).timeout(6000);
+  }, 6000);
 });

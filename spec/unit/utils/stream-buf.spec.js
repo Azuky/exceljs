@@ -27,14 +27,15 @@ describe('StreamBuf', () => {
     expect(chunk.toString('UTF8')).to.equal('Hello, World!');
   });
 
-  it('signals end', (done) => {
-    const stream = new StreamBuf();
-    stream.on('finish', () => {
-      done();
-    });
-    stream.write('Hello, World!');
-    stream.end();
-  });
+  it('signals end', () =>
+    new Promise((resolve) => {
+      const stream = new StreamBuf();
+      stream.on('finish', () => {
+        resolve();
+      });
+      stream.write('Hello, World!');
+      stream.end();
+    }));
 
   it('handles buffers', () =>
     new Promise((resolve, reject) => {

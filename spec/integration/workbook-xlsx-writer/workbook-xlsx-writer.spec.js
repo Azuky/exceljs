@@ -238,9 +238,7 @@ describe('WorkbookWriter', () => {
         });
     });
 
-    it('A lot of sheets', function () {
-      this.timeout(5000);
-
+    it('A lot of sheets', () => {
       let i;
       const wb = new ExcelJS.stream.xlsx.WorkbookWriter({
         filename: TEST_XLSX_FILE_NAME,
@@ -264,7 +262,7 @@ describe('WorkbookWriter', () => {
             expect(ws2.getCell('A1').value).to.equal(i);
           }
         });
-    });
+    }, 5000);
 
     it('addRow', () => {
       const options = {

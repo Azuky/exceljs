@@ -40,7 +40,7 @@ describe('Anchor', () => {
   });
   describe('resize worksheet`s cells', () => {
     const context = this;
-    before(() => {
+    beforeAll(() => {
       context.worksheet = createSheetMock();
       context.worksheet.getColumn(1).width = 20;
       context.worksheet.getRow(1).height = 20;

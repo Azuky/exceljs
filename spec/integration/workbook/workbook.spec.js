@@ -410,9 +410,7 @@ describe('Workbook', () => {
       return wb.xlsx.writeFile(TEST_XLSX_FILE_NAME);
     });
 
-    it('a lot of sheets to xlsx file', function () {
-      this.timeout(10000);
-
+    it('a lot of sheets to xlsx file', () => {
       let i;
       const wb = new ExcelJS.Workbook();
       const numSheets = 90;
@@ -434,11 +432,9 @@ describe('Workbook', () => {
             expect(ws2.getCell('A1').value).to.equal(i);
           }
         });
-    });
+    }, 10000);
 
-    it('csv file', function () {
-      this.timeout(5000);
-
+    it('csv file', () => {
       const wb = testUtils.createTestBook(new ExcelJS.Workbook(), 'csv');
 
       return wb.csv
@@ -450,10 +446,9 @@ describe('Workbook', () => {
         .then((wb2) => {
           testUtils.checkTestBook(wb2, 'csv');
         });
-    });
+    }, 5000);
 
-    it('CSV file and its configuration', function () {
-      this.timeout(5000);
+    it('CSV file and its configuration', () => {
       const writeOptions = {
         dateFormat: 'DD/MM/YYYY HH:mm:ss',
         dateUTC: false,
@@ -484,7 +479,7 @@ describe('Workbook', () => {
         .then((wb2) => {
           testUtils.checkTestBook(wb2, 'csv', false, writeOptions);
         });
-    });
+    }, 5000);
 
     it('defined names', () => {
       const wb1 = new ExcelJS.Workbook();
