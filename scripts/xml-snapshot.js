@@ -6,7 +6,7 @@ process.env.TZ = 'UTC';
 // Usage: node scripts/xml-snapshot.js --entry <path-to-exceljs-entry> --out <dir>
 const fs = require('fs');
 const path = require('path');
-const {PassThrough} = require('stream');
+const { PassThrough } = require('stream');
 const JSZip = require('jszip');
 
 function arg(name) {
@@ -35,25 +35,25 @@ function stylesAndNumfmt() {
   const wb = newWorkbook();
   const ws = wb.addWorksheet('Styles');
   ws.getCell('A1').value = 'Bold red';
-  ws.getCell('A1').font = {name: 'Arial', size: 14, bold: true, italic: true, color: {argb: 'FFFF0000'}};
+  ws.getCell('A1').font = { name: 'Arial', size: 14, bold: true, italic: true, color: { argb: 'FFFF0000' } };
   ws.getCell('A2').value = 'Solid fill';
-  ws.getCell('A2').fill = {type: 'pattern', pattern: 'solid', fgColor: {argb: 'FF00FF00'}};
+  ws.getCell('A2').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF00FF00' } };
   ws.getCell('A3').value = 'Gradient';
   ws.getCell('A3').fill = {
     type: 'gradient',
     gradient: 'angle',
     degree: 0,
     stops: [
-      {position: 0, color: {argb: 'FF0000FF'}},
-      {position: 1, color: {argb: 'FFFFFF00'}},
+      { position: 0, color: { argb: 'FF0000FF' } },
+      { position: 1, color: { argb: 'FFFFFF00' } },
     ],
   };
   ws.getCell('A4').value = 'Borders';
   ws.getCell('A4').border = {
-    top: {style: 'thin', color: {argb: 'FF000000'}},
-    left: {style: 'double'},
-    bottom: {style: 'thick', color: {argb: 'FF0000FF'}},
-    right: {style: 'dashed'},
+    top: { style: 'thin', color: { argb: 'FF000000' } },
+    left: { style: 'double' },
+    bottom: { style: 'thick', color: { argb: 'FF0000FF' } },
+    right: { style: 'dashed' },
   };
   ws.getCell('A5').value = 'Aligned wrapped text that is long';
   ws.getCell('A5').alignment = {
@@ -72,7 +72,7 @@ function stylesAndNumfmt() {
   ws.getCell('B4').value = new Date(Date.UTC(2021, 11, 31));
   ws.getCell('B5').value = 42;
   ws.getCell('B5').numFmt = '"$"#,##0;[Red]-"$"#,##0';
-  ws.getCell('B5').protection = {locked: false, hidden: true};
+  ws.getCell('B5').protection = { locked: false, hidden: true };
   return wb;
 }
 
@@ -82,17 +82,17 @@ function formulas() {
   ws.getCell('A1').value = 1;
   ws.getCell('A2').value = 2;
   ws.getCell('A3').value = 3;
-  ws.getCell('B1').value = {formula: 'SUM(A1:A3)'};
-  ws.getCell('B2').value = {formula: 'SUM(A1:A3)*2', result: 12};
-  ws.getCell('B3').value = {formula: 'A1&"x"', result: '1x'};
-  ws.getCell('C1').value = {formula: 'A1*10', result: 10};
-  ws.getCell('C2').value = {sharedFormula: 'C1', result: 20};
-  ws.getCell('C3').value = {sharedFormula: 'C1', result: 30};
-  ws.getCell('D1').value = {formula: 'A1:A3*2', result: 2, shareType: 'array', ref: 'D1:D3'};
+  ws.getCell('B1').value = { formula: 'SUM(A1:A3)' };
+  ws.getCell('B2').value = { formula: 'SUM(A1:A3)*2', result: 12 };
+  ws.getCell('B3').value = { formula: 'A1&"x"', result: '1x' };
+  ws.getCell('C1').value = { formula: 'A1*10', result: 10 };
+  ws.getCell('C2').value = { sharedFormula: 'C1', result: 20 };
+  ws.getCell('C3').value = { sharedFormula: 'C1', result: 30 };
+  ws.getCell('D1').value = { formula: 'A1:A3*2', result: 2, shareType: 'array', ref: 'D1:D3' };
   ws.getCell('D2').value = 4;
   ws.getCell('D3').value = 6;
-  ws.getCell('E1').value = {formula: 'A1>0', result: true};
-  ws.getCell('E2').value = {formula: 'NA()', result: {error: '#N/A'}};
+  ws.getCell('E1').value = { formula: 'A1>0', result: true };
+  ws.getCell('E2').value = { formula: 'NA()', result: { error: '#N/A' } };
   return wb;
 }
 
@@ -121,14 +121,14 @@ function table() {
     ref: 'A1',
     headerRow: true,
     totalsRow: true,
-    style: {theme: 'TableStyleDark3', showRowStripes: true},
+    style: { theme: 'TableStyleDark3', showRowStripes: true },
     columns: [
-      {name: 'Date', totalsRowLabel: 'Totals:', filterButton: true, style: {numFmt: 'yyyy-mm-dd'}},
+      { name: 'Date', totalsRowLabel: 'Totals:', filterButton: true, style: { numFmt: 'yyyy-mm-dd' } },
       {
         name: 'Amount',
         totalsRowFunction: 'sum',
         filterButton: false,
-        style: {font: {bold: true}, numFmt: '0.00'},
+        style: { font: { bold: true }, numFmt: '0.00' },
       },
     ],
     rows: [
@@ -143,9 +143,9 @@ function table() {
 function image() {
   const wb = newWorkbook();
   const ws = wb.addWorksheet('Image');
-  const id = wb.addImage({filename: IMAGE_PATH, extension: 'png'});
+  const id = wb.addImage({ filename: IMAGE_PATH, extension: 'png' });
   ws.addImage(id, 'B2:D6');
-  ws.addImage(id, {tl: {col: 5, row: 1}, ext: {width: 100, height: 80}});
+  ws.addImage(id, { tl: { col: 5, row: 1 }, ext: { width: 100, height: 80 } });
   return wb;
 }
 
@@ -178,13 +178,13 @@ function validationAndCf() {
       {
         type: 'expression',
         formulae: ['MOD(ROW()+COLUMN(),2)=0'],
-        style: {fill: {type: 'pattern', pattern: 'solid', bgColor: {argb: 'FF00FF00'}}},
+        style: { fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: 'FF00FF00' } } },
       },
       {
         type: 'cellIs',
         operator: 'greaterThan',
         formulae: [20],
-        style: {font: {color: {argb: 'FFFF0000'}}},
+        style: { font: { color: { argb: 'FFFF0000' } } },
       },
     ],
   });
@@ -193,8 +193,8 @@ function validationAndCf() {
     rules: [
       {
         type: 'colorScale',
-        cfvo: [{type: 'min'}, {type: 'max'}],
-        color: [{argb: 'FFFFFFFF'}, {argb: 'FF00AA00'}],
+        cfvo: [{ type: 'min' }, { type: 'max' }],
+        color: [{ argb: 'FFFFFFFF' }, { argb: 'FF00AA00' }],
       },
     ],
   });
@@ -209,22 +209,22 @@ function commentsNamesLinks() {
   ws.getCell('A2').value = 'Rich note';
   ws.getCell('A2').note = {
     texts: [
-      {font: {size: 12, color: {argb: 'FFFF0000'}, name: 'Calibri'}, text: 'Red '},
-      {font: {size: 10, name: 'Calibri'}, text: 'plain'},
+      { font: { size: 12, color: { argb: 'FFFF0000' }, name: 'Calibri' }, text: 'Red ' },
+      { font: { size: 10, name: 'Calibri' }, text: 'plain' },
     ],
     editAs: 'twoCells',
   };
   ws.getCell('B1').value = 100;
   wb.definedNames.add('Misc!$B$1', 'MyName');
-  ws.getCell('C1').value = {text: 'ExcelJS', hyperlink: 'https://github.com/exceljs/exceljs'};
-  ws.getCell('C2').value = {text: 'Internal', hyperlink: '#Misc!A1'};
+  ws.getCell('C1').value = { text: 'ExcelJS', hyperlink: 'https://github.com/exceljs/exceljs' };
+  ws.getCell('C2').value = { text: 'Internal', hyperlink: '#Misc!A1' };
   return wb;
 }
 
 async function streamWriter() {
   const stream = new PassThrough();
   const chunks = [];
-  stream.on('data', chunk => chunks.push(chunk));
+  stream.on('data', (chunk) => chunks.push(chunk));
   const done = new Promise((resolve, reject) => {
     stream.on('end', resolve);
     stream.on('error', reject);
@@ -238,17 +238,17 @@ async function streamWriter() {
   wb.modified = FIXED_DATE;
   const ws = wb.addWorksheet('Stream');
   ws.columns = [
-    {header: 'Name', key: 'name', width: 20},
-    {header: 'Amount', key: 'amount', width: 12, style: {numFmt: '#,##0.00'}},
-    {header: 'When', key: 'when', width: 14, style: {numFmt: 'yyyy-mm-dd'}},
+    { header: 'Name', key: 'name', width: 20 },
+    { header: 'Amount', key: 'amount', width: 12, style: { numFmt: '#,##0.00' } },
+    { header: 'When', key: 'when', width: 14, style: { numFmt: 'yyyy-mm-dd' } },
   ];
   ws.mergeCells('E1:F2');
-  ws.getRow(1).font = {bold: true, color: {argb: 'FFFFFFFF'}};
-  ws.getRow(1).fill = {type: 'pattern', pattern: 'solid', fgColor: {argb: 'FF333333'}};
+  ws.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+  ws.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF333333' } };
   ws.getRow(1).commit();
   for (let i = 1; i <= 5; i++) {
-    const row = ws.addRow({name: `Item ${i}`, amount: i * 1.5, when: new Date(Date.UTC(2020, i, 1))});
-    row.getCell('name').border = {bottom: {style: 'thin'}};
+    const row = ws.addRow({ name: `Item ${i}`, amount: i * 1.5, when: new Date(Date.UTC(2020, i, 1)) });
+    row.getCell('name').border = { bottom: { style: 'thin' } };
     row.commit();
   }
   ws.commit();
@@ -260,11 +260,11 @@ async function streamWriter() {
 async function unpack(buffer, dir) {
   const zip = await JSZip.loadAsync(buffer);
   const names = Object.keys(zip.files)
-    .filter(n => !zip.files[n].dir)
+    .filter((n) => !zip.files[n].dir)
     .sort();
   for (const name of names) {
     const target = path.join(dir, name);
-    fs.mkdirSync(path.dirname(target), {recursive: true});
+    fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.writeFileSync(target, await zip.files[name].async('nodebuffer'));
   }
 }
@@ -284,7 +284,7 @@ async function main() {
     console.error(`--out directory is not empty: ${out}. Remove it or pass a fresh directory.`);
     process.exit(2);
   }
-  fs.mkdirSync(out, {recursive: true});
+  fs.mkdirSync(out, { recursive: true });
   for (const [name, build] of Object.entries(workbookScenarios)) {
     const buffer = await build().xlsx.writeBuffer();
     await unpack(buffer, path.join(out, name));
@@ -296,15 +296,15 @@ async function main() {
   csvWs.addRows([
     ['a', 'b, with comma', 'c "quoted"'],
     [1, 2.5, new Date(Date.UTC(2020, 0, 1))],
-    [true, null, {formula: 'A2+B2', result: 3.5}],
+    [true, null, { formula: 'A2+B2', result: 3.5 }],
   ]);
   const csvDir = path.join(out, 'csv-write');
-  fs.mkdirSync(csvDir, {recursive: true});
+  fs.mkdirSync(csvDir, { recursive: true });
   fs.writeFileSync(path.join(csvDir, 'out.csv'), await csvWb.csv.writeBuffer());
   console.log(`snapshot written to ${out}`);
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error(err);
   process.exit(1);
 });

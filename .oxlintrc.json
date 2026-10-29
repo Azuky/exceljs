@@ -4,8 +4,21 @@
   "categories": { "correctness": "error" },
   "env": { "node": true, "es2024": true },
   "ignorePatterns": [
-    "dist", "build", ".baseline", "graphify-out", "pnpm-lock.yaml", "test/", "spec/manual/",
-    "spec/integration/data/", "spec/out/", "lib/xlsx/xml/", "*.md", "CLAUDE.local.md", ".claude"
+    "dist",
+    "build",
+    ".baseline",
+    "graphify-out",
+    "pnpm-lock.yaml",
+    "test/",
+    "spec/manual/",
+    "spec/integration/data/",
+    "spec/out/",
+    "lib/xlsx/xml/",
+    "*.md",
+    "CLAUDE.local.md",
+    ".claude",
+    ".github/lock.yml",
+    ".superpowers"
   ],
   "overrides": [
     {
