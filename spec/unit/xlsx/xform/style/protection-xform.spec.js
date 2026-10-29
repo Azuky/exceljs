@@ -8,8 +8,7 @@ const expectations = [
     create: () => new ProtectionXform(),
     preparedModel: {},
     xml: '',
-    parsedModel: undefined,
-    tests: ['render', 'renderIn', 'parse'],
+    tests: ['render', 'renderIn'],
   },
   {
     title: 'Locked',

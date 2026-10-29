@@ -3,6 +3,8 @@ const fs = require('fs');
 const testXformHelper = require('../test-xform-helper');
 
 const TableXform = verquire('xlsx/xform/table/table-xform');
+const TableColumnXform = verquire('xlsx/xform/table/table-column-xform');
+const { knownBug } = require('../../../../utils/known-bug');
 
 const preparedTable = require('./data/table.1.1');
 
@@ -60,7 +62,7 @@ const expectations = [
       'xmlns:xr3="http://schemas.microsoft.com/office/spreadsheetml/2016/revision3" ' +
       'id="1" name="Styled" displayName="Styled" ref="A1:B3" totalsRowShown="1" headerRowCount="1">' +
       '<autoFilter ref="A1:B3"><filterColumn colId="0" hiddenButton="0"/><filterColumn colId="1" hiddenButton="0"/></autoFilter>' +
-      '<tableColumns count="2"><tableColumn id="1" name="Plain"/><tableColumn id="2" name="Bold" dxfId="0"/></tableColumns>' +
+      '<tableColumns count="2"><tableColumn id="1" name="Plain"/><tableColumn id="2" name="Bold" dataDxfId="0"/></tableColumns>' +
       '<tableStyleInfo name="TableStyleMedium2" showFirstColumn="0" showLastColumn="0" showRowStripes="1" showColumnStripes="0"/>' +
       '</table>',
     // sax delivers attribute values as strings
@@ -110,10 +112,26 @@ const expectations = [
         },
       },
     },
-    tests: ['render', 'parse', 'reconcile'],
+    // known bug: lib writes/reads `dxfId`; CT_TableColumn only has dataDxfId (headerRowDxfId, totalsRowDxfId)
+    knownFailures: ['render'],
+    knownFailureMessage: /tableColumn\[1\]: attributes \[dxfId,id,name\] !== \[dataDxfId,id,name\]/,
+    tests: ['render', 'reconcile'],
   },
 ];
 
 describe('TableXform', () => {
   testXformHelper(expectations);
+
+  // known bug: the column's differential format is read from `dxfId`, the attribute Excel writes is `dataDxfId`
+  knownBug(
+    'parses the dataDxfId of a table column',
+    async () => {
+      const model = await testXformHelper.parseXml(
+        new TableColumnXform(),
+        '<tableColumn id="2" name="Bold" dataDxfId="0"/>',
+      );
+      expect(model.dxfId).to.equal('0');
+    },
+    /expected undefined to equal '0'/,
+  );
 });

@@ -1,5 +1,6 @@
 const testXformHelper = require('../../test-xform-helper');
 const XmlStream = verquire('utils/xml-stream');
+const { knownBug } = require('../../../../../utils/known-bug');
 
 const CfRuleXform = verquire('xlsx/xform/sheet/cf/cf-rule-xform');
 
@@ -271,7 +272,7 @@ const expectations = [
       priority: 1,
     },
     xml: `
-      <cfRule type="containsText" dxfId="1" priority="1">
+      <cfRule type="containsText" dxfId="1" priority="1" operator="containsText" text="foo">
         <formula>NOT(ISERROR(SEARCH("foo",B2)))</formula>
       </cfRule>
     `,
@@ -282,6 +283,9 @@ const expectations = [
       priority: 1,
       formulae: ['NOT(ISERROR(SEARCH("foo",B2)))'],
     },
+    // known bug: operator="containsText" and text="foo" (as Excel writes them) are not written
+    knownFailures: ['render', 'renderIn'],
+    knownFailureMessage: /attributes \[dxfId,priority,type\] !== \[dxfId,operator,priority,text,type\]/,
     tests: ['render', 'renderIn', 'parse'],
   },
   {
@@ -299,7 +303,7 @@ const expectations = [
       priority: 1,
     },
     xml: `
-      <cfRule type="containsText" dxfId="1" priority="1">
+      <cfRule type="containsText" dxfId="1" priority="1" operator="containsText" text="foo">
         <formula>ISNUMBER(SEARCH("bar",B2))</formula>
       </cfRule>
     `,
@@ -310,6 +314,9 @@ const expectations = [
       priority: 1,
       formulae: ['ISNUMBER(SEARCH("bar",B2))'],
     },
+    // known bug: operator="containsText" and text="foo" (as Excel writes them) are not written
+    knownFailures: ['render'],
+    knownFailureMessage: /attributes \[dxfId,priority,type\] !== \[dxfId,operator,priority,text,type\]/,
     tests: ['render', 'parse'],
   },
   ...[
@@ -329,7 +336,7 @@ const expectations = [
       dxfId: 1,
       priority: 1,
     },
-    // as written by Excel: no `operator` attribute for these cfRule types
+    // Excel writes these cfRule types without an `operator` attribute
     // (ST_ConditionalFormattingOperator has no containsBlanks/containsErrors member)
     xml: `
       <cfRule type="${operator}" dxfId="1" priority="1">
@@ -459,4 +466,18 @@ describe('CfRuleXform', () => {
       expect(formulaOf('notContainsErrors')).to.equal('NOT(ISERROR(B2))');
     });
   });
+
+  // known bug: the `text` attribute of a containsText rule is not read, so the text is lost on a round trip
+  knownBug(
+    'parses the text attribute of a containsText rule',
+    async () => {
+      const model = await testXformHelper.parseXml(
+        new CfRuleXform(),
+        '<cfRule type="containsText" dxfId="1" priority="1" operator="containsText" text="foo">' +
+          '<formula>NOT(ISERROR(SEARCH("foo",B2)))</formula></cfRule>',
+      );
+      expect(model.text).to.equal('foo');
+    },
+    /expected undefined to equal 'foo'/,
+  );
 });

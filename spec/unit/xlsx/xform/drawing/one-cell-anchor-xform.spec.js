@@ -17,7 +17,7 @@ const expectations = [
     },
     initialModel: { range, picture: { rId: 'rId2' } },
     preparedModel: { range, picture: { index: 2, rId: 'rId2' } },
-    xml: `<xdr:oneCellAnchor editAs="oneCell">
+    xml: `<xdr:oneCellAnchor>
       <xdr:from><xdr:col>5</xdr:col><xdr:colOff>320000</xdr:colOff><xdr:row>2</xdr:row><xdr:rowOff>90000</xdr:rowOff></xdr:from>
       <xdr:ext cx="952500" cy="1905000"/>
       <xdr:pic>
@@ -50,6 +50,9 @@ const expectations = [
       mediaIndex: { 'image2.png': 0 },
       media: [medium],
     },
+    // known bug: lib writes editAs on oneCellAnchor (CT_OneCellAnchor has no attributes)
+    knownFailures: ['render', 'renderIn'],
+    knownFailureMessage: /xdr:oneCellAnchor(\[1\])?: attributes \[editAs\] !== \[\]/,
     tests: ['prepare', 'render', 'renderIn', 'parse', 'reconcile'],
   },
 ];

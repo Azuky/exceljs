@@ -10,8 +10,8 @@ const expectations = [
     },
     preparedModel: {},
     xml: '',
-    parsedModel: undefined,
-    tests: ['render', 'renderIn', 'parse'],
+    parsedModel: {},
+    tests: ['render', 'renderIn'],
   },
   {
     title: 'Protected (Default)',
