@@ -1,7 +1,5 @@
-import 'regenerator-runtime/runtime';
-
 import { expect } from 'chai';
-import ExcelJS from '../../index';
+import ExcelJS from 'exceljs';
 
 describe('typescript', () => {
   it('can create and buffer xlsx', async () => {
@@ -15,7 +13,7 @@ describe('typescript', () => {
 
     const wb2 = new ExcelJS.Workbook();
     await wb2.xlsx.load(buffer);
-    const ws2 = wb2.getWorksheet('blort');
+    const ws2 = wb2.getWorksheet('blort')!;
     expect(ws2.getCell('A1').value).to.equal(7);
   });
   it('can create and stream xlsx', async () => {
@@ -24,13 +22,14 @@ describe('typescript', () => {
     ws.getCell('A1').value = 7;
 
     const wb2 = new ExcelJS.Workbook();
+    // @ts-expect-error -- XLSX#createInputStream exists in lib/xlsx/xlsx.js (deprecated) but is missing from index.d.ts; Stage 5 typings difference #1
     const stream = wb2.xlsx.createInputStream();
     await wb.xlsx.write(stream);
     stream.end();
 
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       stream.on('done', () => {
-        const ws2 = wb2.getWorksheet('blort');
+        const ws2 = wb2.getWorksheet('blort')!;
         expect(ws2.getCell('A1').value).to.equal(7);
         resolve();
       });
