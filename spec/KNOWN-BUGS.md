@@ -118,7 +118,7 @@ Format: lib location - wrong vs expected - spec file: test title. `knownBug` tes
 
 ## Open questions for the owner
 
-- CSV rich text is written as JSON (`lib/csv/csv.js:146`, UD-4): bug or by design?
+- CSV rich text is written as JSON (`lib/csv/csv.js:146`): bug or by design?
 - `StreamBuf` accepts writes after `end()` (characterisation test in `spec/unit/utils/stream-buf.spec.js`, "write after
   end"): intended?
 - Stream reader defaults: README documents `entries: 'emit'` and `hyperlinks: 'cache'`, but the code defaults both to
