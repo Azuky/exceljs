@@ -1,0 +1,40 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["import", "node"],
+  "categories": { "correctness": "error" },
+  "env": { "node": true, "es2024": true },
+  "ignorePatterns": [
+    "/dist",
+    "/build",
+    ".baseline",
+    "graphify-out",
+    "pnpm-lock.yaml",
+    "test/",
+    "spec/manual/",
+    "spec/integration/data/",
+    "spec/out/",
+    "lib/xlsx/xml/",
+    "*.md",
+    "CLAUDE.local.md",
+    ".claude",
+    ".github/lock.yml",
+    ".superpowers"
+  ],
+  "overrides": [
+    {
+      "files": ["spec/**"],
+      "env": { "mocha": true },
+      "globals": { "verquire": "readonly", "expect": "readonly" }
+    }
+  ],
+  "rules": {
+    "no-console": ["warn", { "allow": ["warn"] }],
+    "no-unused-vars": ["warn", { "vars": "all", "args": "none", "ignoreRestSiblings": true }],
+    "no-use-before-define": ["error", { "variables": false, "classes": false, "functions": false }],
+    "no-sparse-arrays": "warn",
+    "no-unassigned-vars": "warn",
+    "no-prototype-builtins": "off",
+    "no-param-reassign": "off",
+    "prefer-destructuring": ["warn", { "array": false, "object": true }]
+  }
+}
