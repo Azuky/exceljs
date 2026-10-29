@@ -62,7 +62,6 @@
     "test:end-to-end": "mocha --require spec/config/setup spec/end-to-end --recursive",
     "test:smoke": "node scripts/smoke-test.mjs",
     "test:manual": "node spec/manual/app.js",
-    "test:typescript": "mocha -r ts-node/register spec/typescript/**/*.spec.ts",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
@@ -71,6 +70,7 @@
     "build": "pnpm run clean && tsdown",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
+    "typecheck": "tsc -p tsconfig.json",
     "prepare": "husky",
     "prepack": "pnpm run build"
   },
@@ -88,7 +88,7 @@
   "devDependencies": {
     "@types/chai": "^4.2.12",
     "@types/mocha": "^8.0.3",
-    "@types/node": "^14.11.2",
+    "@types/node": "^22.0.0",
     "chai": "^4.2.0",
     "chai-datetime": "^1.7.0",
     "chai-xml": "^0.3.2",
@@ -101,9 +101,8 @@
     "oxfmt": "^0.75.0",
     "oxlint": "^1.90.0",
     "sax": "^1.2.4",
-    "ts-node": "^8.10.2",
     "tsdown": "^0.23.2",
-    "typescript": "^3.9.7"
+    "typescript": "~7.0.2"
   },
   "lint-staged": {
     "*.{js,mjs,cjs,ts}": [
