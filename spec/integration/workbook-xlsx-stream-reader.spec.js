@@ -564,6 +564,84 @@ describe('WorkbookReader (streaming)', () => {
       expect(worksheets).to.equal(0);
     });
 
+    // delays the real fs.open so a premature temp file cleanup would win the race against the read stream
+    const withDelayedOpen = async (fn) => {
+      const realOpen = fs.open;
+      const open = vi.spyOn(fs, 'open').mockImplementation((...args) => {
+        setTimeout(() => realOpen.apply(fs, args), 20);
+      });
+      try {
+        await fn();
+      } finally {
+        open.mockRestore();
+      }
+    };
+
+    it('worksheets:ignore survives a slow temp file open without an uncaught error', async () => {
+      await withDelayedOpen(async () => {
+        const reader = new WorkbookReader(filename, { worksheets: 'ignore' });
+        let worksheets = 0;
+        reader.on('worksheet', () => worksheets++);
+        await run(reader);
+        expect(worksheets).to.equal(0);
+        // a late ENOENT from a stream opened after cleanup would surface here
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      });
+    });
+
+    it('worksheets:emit keeps the temp file until read, then removes it', async () => {
+      const paths = [];
+      const realFile = tmp.file;
+      const tmpFile = vi.spyOn(tmp, 'file').mockImplementation((...args) => {
+        const callback = args[args.length - 1];
+        return realFile.apply(tmp, [
+          ...args.slice(0, -1),
+          (err, path, ...rest) => {
+            if (path) paths.push(path);
+            return callback(err, path, ...rest);
+          },
+        ]);
+      });
+      try {
+        await withDelayedOpen(async () => {
+          const sheets = await readSheets(filename, { sharedStrings: 'cache' });
+          expect(sheets).to.have.length(1);
+          expect(sheets[0].rows.map((row) => row.values)).to.deep.equal(EXPECTED_ROWS);
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        });
+        expect(paths).to.have.length(1);
+        expect(fs.existsSync(paths[0])).to.equal(false);
+      } finally {
+        tmpFile.mockRestore();
+      }
+    });
+
+    it('removes the temp file even when the consumer never reads the worksheet', async () => {
+      const paths = [];
+      const realFile = tmp.file;
+      const tmpFile = vi.spyOn(tmp, 'file').mockImplementation((...args) => {
+        const callback = args[args.length - 1];
+        return realFile.apply(tmp, [
+          ...args.slice(0, -1),
+          (err, path, ...rest) => {
+            if (path) paths.push(path);
+            return callback(err, path, ...rest);
+          },
+        ]);
+      });
+      try {
+        // eslint-disable-next-line no-unused-vars
+        for await (const worksheet of new WorkbookReader(filename, {})) {
+          // deliberately not reading the worksheet
+        }
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        expect(paths).to.have.length(1);
+        expect(fs.existsSync(paths[0])).to.equal(false);
+      } finally {
+        tmpFile.mockRestore();
+      }
+    });
+
     it('entries:emit reports the parts being read', async () => {
       const reader = new WorkbookReader(filename, { entries: 'emit' });
       const entries = [];
